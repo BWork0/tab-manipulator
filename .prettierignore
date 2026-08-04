@@ -1,0 +1,8 @@
+node_modules/
+.pnpm-store/
+.output/
+.wxt/
+.docs/
+coverage/
+pnpm-lock.yaml
+prd-background/
