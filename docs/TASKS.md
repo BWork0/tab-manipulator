@@ -20,14 +20,23 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T001 — Capture the clean starter baseline
 
-- [ ] Run the existing TypeScript compile and Chromium/Firefox builds before changing source.
-- [ ] Record any pre-existing warnings or failures in the implementation PR or development notes.
-- [ ] Confirm the package manager is pnpm from `pnpm-lock.yaml`.
+- [x] Run the existing TypeScript compile and Chromium/Firefox builds before changing source.
+- [x] Record any pre-existing warnings or failures in the implementation PR or development notes.
+- [x] Confirm the package manager is pnpm from `pnpm-lock.yaml`.
 
 **Requirements:** Build acceptance  
 **Depends on:** None  
 **Likely files:** None  
 **Acceptance:** Baseline commands and outcomes are documented; no generated output is committed as source.
+
+**Baseline evidence (2026-08-04):**
+
+- `pnpm.cmd --version` reported pnpm 11.7.0; `pnpm-lock.yaml` and the `packageManager` field confirm pnpm is required.
+- `pnpm.cmd compile` passed with no TypeScript errors or warnings.
+- `pnpm.cmd build` passed and produced the expected Chromium MV3 starter output.
+- `pnpm.cmd build:firefox` passed and produced Firefox MV2 output with the existing script. WXT warned that new Firefox extensions require `data_collection_permissions` metadata and that an extension ID is required for MV3 and recommended for MV2. Firefox MV3 script configuration is tracked by T002, and the stable extension ID is tracked by T065.
+- Direct `pnpm` invocation was blocked by the host PowerShell execution policy for `pnpm.ps1`; the installed `pnpm.cmd` shim ran all required baseline commands successfully.
+- `.wxt/` and `.output/` are ignored, and `git ls-files .wxt .output` confirmed that no generated artifacts are tracked.
 
 ### T002 — Configure product metadata, permissions, and MV3 scripts
 
