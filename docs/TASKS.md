@@ -40,11 +40,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T002 — Configure product metadata, permissions, and MV3 scripts
 
-- [ ] Rename the package and set the manifest name/description through `package.json` and `wxt.config.ts`.
-- [ ] Configure only `tabs`, `storage`, and `alarms` permissions.
-- [ ] Ensure there are no `host_permissions` or content-script matches.
-- [ ] Change Firefox dev/build/zip scripts to pass `--mv3` explicitly.
-- [ ] Add scripts for test and combined validation commands.
+- [x] Rename the package and set the manifest name/description through `package.json` and `wxt.config.ts`.
+- [x] Configure only `tabs`, `storage`, and `alarms` permissions.
+- [x] Ensure there are no `host_permissions` or content-script matches.
+- [x] Change Firefox dev/build/zip scripts to pass `--mv3` explicitly.
+- [x] Add scripts for test and combined validation commands.
 
 **Requirements:** Sections 11–13; build acceptance  
 **Depends on:** T001  
