@@ -53,10 +53,10 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T003 — Remove starter-only behavior and establish source boundaries
 
-- [ ] Delete the counter component and WXT/TypeScript demo popup content.
-- [ ] Remove `src/entrypoints/content.ts` so no content script is generated.
-- [ ] Create the `core`, `platform`, `storage`, and `messaging` directories defined by the PRD.
-- [ ] Keep browser runtime calls inside WXT entrypoint `main` functions or explicitly called platform services.
+- [x] Delete the counter component and WXT/TypeScript demo popup content.
+- [x] Remove `src/entrypoints/content.ts` so no content script is generated.
+- [x] Create the `core`, `platform`, `storage`, and `messaging` directories defined by the PRD.
+- [x] Keep browser runtime calls inside WXT entrypoint `main` functions or explicitly called platform services.
 
 **Requirements:** Section 11  
 **Depends on:** T001  
