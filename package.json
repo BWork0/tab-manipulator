@@ -14,7 +14,8 @@
     "zip:firefox": "wxt zip -b firefox --mv3",
     "compile": "tsc --noEmit",
     "test": "vitest run",
-    "validate": "pnpm format:check && pnpm compile && pnpm build && pnpm build:firefox",
+    "test:coverage": "vitest run --coverage",
+    "validate": "pnpm format:check && pnpm compile && pnpm test && pnpm build && pnpm build:firefox",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:staged": "lint-staged",
@@ -23,10 +24,12 @@
     "postinstall": "wxt prepare"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "4.1.10",
     "lint-staged": "^17.3.0",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
+    "vitest": "4.1.10",
     "web-ext": "^10.5.0",
     "wxt": "^0.21.3"
   },

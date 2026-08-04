@@ -65,10 +65,10 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T004 — Add the WXT-aware unit test harness
 
-- [ ] Add Vitest as a development dependency.
-- [ ] Configure `WxtVitest()` in `vitest.config.ts`.
-- [ ] Add a smoke test that imports `wxt/browser` and resets the WXT fake browser between tests.
-- [ ] Add coverage output for core and storage modules without enforcing an arbitrary repository-wide percentage yet.
+- [x] Add Vitest as a development dependency.
+- [x] Configure `WxtVitest()` in `vitest.config.ts`.
+- [x] Add a smoke test that imports `wxt/browser` and resets the WXT fake browser between tests.
+- [x] Add coverage output for core and storage modules without enforcing an arbitrary repository-wide percentage yet.
 
 **Requirements:** Section 15 automated coverage  
 **Depends on:** T002  
