@@ -178,11 +178,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T020 — Build the settings store
 
-- [ ] Define a WXT `storage.defineItem` key for versioned settings with documented defaults.
-- [ ] Validate values at the storage boundary and safely replace invalid fields with defaults.
-- [ ] Expose typed read, update, and watch operations.
-- [ ] Reserve a migration path for later schema versions.
-- [ ] Add fake-browser tests for defaults, updates, corrupt values, and watcher behavior.
+- [x] Define a WXT `storage.defineItem` key for versioned settings with documented defaults.
+- [x] Validate values at the storage boundary and safely replace invalid fields with defaults.
+- [x] Expose typed read, update, and watch operations.
+- [x] Reserve a migration path for later schema versions.
+- [x] Add fake-browser tests for defaults, updates, corrupt values, and watcher behavior.
 
 **Requirements:** FR-040  
 **Depends on:** T004, T010, T012  
