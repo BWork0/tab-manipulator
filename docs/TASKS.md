@@ -113,10 +113,10 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T011 — Implement URL eligibility checks
 
-- [ ] Define the schemes/pages that can be activated and reloaded on each supported browser.
-- [ ] Return a typed ineligibility reason rather than a boolean alone.
-- [ ] Handle missing, malformed, and browser-internal URLs safely.
-- [ ] Add unit tests for ordinary HTTP(S), local development URLs, extension pages, browser settings pages, and malformed input.
+- [x] Define the schemes/pages that can be activated and reloaded on each supported browser.
+- [x] Return a typed ineligibility reason rather than a boolean alone.
+- [x] Handle missing, malformed, and browser-internal URLs safely.
+- [x] Add unit tests for ordinary HTTP(S), local development URLs, extension pages, browser settings pages, and malformed input.
 
 **Requirements:** FR-003  
 **Depends on:** T010  
