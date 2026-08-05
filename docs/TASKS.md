@@ -138,11 +138,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T013 — Implement tab filtering and reconciliation
 
-- [ ] Combine URL eligibility, allow/block rules, and pinned preference into one pure target filter.
-- [ ] Reconcile stored descriptors with a current tab snapshot using session IDs plus URL checks.
-- [ ] Update current tab index/order without adding tabs not captured at schedule start.
-- [ ] Treat moved-window, closed, mismatched-ID, and newly ineligible targets as explicit outcomes.
-- [ ] Add tests for duplicate URLs and stale/reused numeric IDs.
+- [x] Combine URL eligibility, allow/block rules, and pinned preference into one pure target filter.
+- [x] Reconcile stored descriptors with a current tab snapshot using session IDs plus URL checks.
+- [x] Update current tab index/order without adding tabs not captured at schedule start.
+- [x] Treat moved-window, closed, mismatched-ID, and newly ineligible targets as explicit outcomes.
+- [x] Add tests for duplicate URLs and stale/reused numeric IDs.
 
 **Requirements:** FR-001–003, FR-013, FR-030, FR-041  
 **Depends on:** T011, T012  
