@@ -164,10 +164,10 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T015 — Implement refresh planning and aggregation
 
-- [ ] Produce a refresh plan from the captured targets and current tab snapshot.
-- [ ] Preserve independent skip/failure outcomes per target.
-- [ ] Aggregate result counts for popup feedback without storing page content.
-- [ ] Add tests proving one failed target does not suppress the rest.
+- [x] Produce a refresh plan from the captured targets and current tab snapshot.
+- [x] Preserve independent skip/failure outcomes per target.
+- [x] Aggregate result counts for popup feedback without storing page content.
+- [x] Add tests proving one failed target does not suppress the rest.
 
 **Requirements:** FR-021, FR-022  
 **Depends on:** T013  
