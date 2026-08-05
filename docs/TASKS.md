@@ -204,11 +204,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T022 — Implement the browser API adapter and capabilities
 
-- [ ] Wrap current-window tab queries, all-window recovery queries, activation, reload, badge/title updates, and options-page opening.
-- [ ] Convert browser exceptions into stable domain error codes.
-- [ ] Detect required API availability and return capability states instead of assuming parity.
-- [ ] Keep target-specific branches inside the adapter/capability modules.
-- [ ] Add fake-browser tests for success, missing API, and rejected browser operations.
+- [x] Wrap current-window tab queries, all-window recovery queries, activation, reload, badge/title updates, and options-page opening.
+- [x] Convert browser exceptions into stable domain error codes.
+- [x] Detect required API availability and return capability states instead of assuming parity.
+- [x] Keep target-specific branches inside the adapter/capability modules.
+- [x] Add fake-browser tests for success, missing API, and rejected browser operations.
 
 **Requirements:** FR-001, FR-003, FR-051; compatibility  
 **Depends on:** T004, T010  
