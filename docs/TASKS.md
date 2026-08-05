@@ -90,6 +90,13 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 **Likely files:** `package.json`, `pnpm-lock.yaml`, `.prettierrc.json`, `.prettierignore`, `.githooks/pre-commit`, `.github/workflows/quality.yml`, `scripts/install-git-hooks.mjs`, `AGENTS.md`  
 **Acceptance:** `pnpm format:check` and `pnpm compile` pass; hook installation exits safely without Git and configures `.githooks` after Git initialization; staged formatting does not rewrite unrelated unstaged files; the GitHub workflow runs the same formatting and type checks.
 
+**Verification evidence (2026-08-05):**
+
+- `pnpm format` established the source baseline, and `pnpm validate` passed formatting, safeguard verification, TypeScript compilation, unit tests, and Chromium/Firefox MV3 builds.
+- `pnpm hooks:install` configured `core.hooksPath` as `.githooks`.
+- `pnpm format:verify-safeguards` passed isolated checks for a safe non-Git install, Git hook-path configuration, and formatting/re-staging a staged file without rewriting an unrelated unstaged file.
+- `.github/workflows/quality.yml` runs the same formatting, safeguard, and TypeScript checks on pushes and pull requests.
+
 ## Phase 1: Shared domain model and pure logic
 
 ### T010 — Define versioned domain and result types

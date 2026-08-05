@@ -15,10 +15,11 @@
     "compile": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "validate": "pnpm format:check && pnpm compile && pnpm test && pnpm build && pnpm build:firefox",
+    "validate": "pnpm format:check && pnpm format:verify-safeguards && pnpm compile && pnpm test && pnpm build && pnpm build:firefox",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:staged": "lint-staged",
+    "format:verify-safeguards": "node scripts/verify-formatting-safeguards.mjs",
     "hooks:install": "node scripts/install-git-hooks.mjs",
     "prepare": "node scripts/install-git-hooks.mjs",
     "postinstall": "wxt prepare"
