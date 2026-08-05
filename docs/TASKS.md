@@ -101,10 +101,10 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T010 — Define versioned domain and result types
 
-- [ ] Define `Settings`, `TabDescriptor`, `RotationSession`, `RefreshSchedule`, run states, directions, and schema versions.
-- [ ] Define structured per-target action results and aggregate success/skip/failure counts.
-- [ ] Define stable error codes suitable for UI messages without persisting sensitive page content.
-- [ ] Export documented defaults from one module.
+- [x] Define `Settings`, `TabDescriptor`, `RotationSession`, `RefreshSchedule`, run states, directions, and schema versions.
+- [x] Define structured per-target action results and aggregate success/skip/failure counts.
+- [x] Define stable error codes suitable for UI messages without persisting sensitive page content.
+- [x] Export documented defaults from one module.
 
 **Requirements:** Sections 8.2, 10, 13  
 **Depends on:** T003  
