@@ -151,11 +151,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T014 — Implement rotation next-target logic
 
-- [ ] Implement wraparound forward and backward selection from current indices.
-- [ ] Implement random selection without an immediate repeat when alternatives exist.
-- [ ] Keep the cursor deterministic for forward/backward modes after removed or reordered tabs.
-- [ ] Stop with a typed reason when fewer than two eligible targets remain.
-- [ ] Inject the random-number source in tests.
+- [x] Implement wraparound forward and backward selection from current indices.
+- [x] Implement random selection without an immediate repeat when alternatives exist.
+- [x] Keep the cursor deterministic for forward/backward modes after removed or reordered tabs.
+- [x] Stop with a typed reason when fewer than two eligible targets remain.
+- [x] Inject the random-number source in tests.
 
 **Requirements:** FR-011, FR-013  
 **Depends on:** T013  
