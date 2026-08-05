@@ -191,11 +191,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T021 — Build the runtime schedule store
 
-- [ ] Create separate WXT storage items for rotation and refresh runtime records.
-- [ ] Provide atomic-looking get/set/update/clear operations per record.
-- [ ] Validate schema version, timestamps, intervals, states, and target descriptors on read.
-- [ ] Preserve or report corrupt/unknown data before returning a safe `needs-attention` state.
-- [ ] Add tests for lifecycle transitions and clearing target URLs when stopped.
+- [x] Create separate WXT storage items for rotation and refresh runtime records.
+- [x] Provide atomic-looking get/set/update/clear operations per record.
+- [x] Validate schema version, timestamps, intervals, states, and target descriptors on read.
+- [x] Preserve or report corrupt/unknown data before returning a safe `needs-attention` state.
+- [x] Add tests for lifecycle transitions and clearing target URLs when stopped.
 
 **Requirements:** FR-041; privacy requirements  
 **Depends on:** T004, T010  
