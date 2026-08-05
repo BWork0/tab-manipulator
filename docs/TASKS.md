@@ -125,11 +125,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T012 — Implement the MVP rule parser and matcher
 
-- [ ] Parse newline-separated rules into normalized plain-domain and wildcard-pattern forms.
-- [ ] Enforce the documented casing behavior and wildcard grammar.
-- [ ] Trim, deduplicate, and report invalid lines.
-- [ ] Implement empty-allowlist behavior and blocklist precedence.
-- [ ] Add table-driven tests for exact domains, subdomains, schemes, paths, ports, wildcard rules, duplicates, and conflicts.
+- [x] Parse newline-separated rules into normalized plain-domain and wildcard-pattern forms.
+- [x] Enforce the documented casing behavior and wildcard grammar.
+- [x] Trim, deduplicate, and report invalid lines.
+- [x] Implement empty-allowlist behavior and blocklist precedence.
+- [x] Add table-driven tests for exact domains, subdomains, schemes, paths, ports, wildcard rules, duplicates, and conflicts.
 
 **Requirements:** FR-031  
 **Depends on:** T010  
