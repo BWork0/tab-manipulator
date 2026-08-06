@@ -61,9 +61,45 @@
           <button id="retry-button" type="button">Try again</button>
         </section>
 
-        <section class="workspace-card" aria-labelledby="workspace-heading">
-          <h2 id="workspace-heading">Automation</h2>
-          <p id="workspace-description">No automation controls are active in this popup yet.</p>
+        <section
+          id="tab-selection-region"
+          class="tab-card"
+          aria-labelledby="tab-selection-heading"
+          aria-busy="true"
+        >
+          <div class="tab-card__heading">
+            <div>
+              <h2 id="tab-selection-heading">Tabs in this window</h2>
+              <p>Select the tabs to automate.</p>
+            </div>
+            <button id="refresh-tabs-button" class="button--quiet button--compact" type="button">
+              Refresh tabs
+            </button>
+          </div>
+
+          <div class="tab-selection-actions" role="group" aria-label="Tab selection controls">
+            <button id="select-all-tabs-button" class="button--quiet" type="button" disabled>
+              Select all eligible
+            </button>
+            <button id="clear-tabs-button" class="button--quiet" type="button" disabled>
+              Clear
+            </button>
+          </div>
+
+          <p id="selection-summary" class="selection-summary" aria-live="polite" aria-atomic="true">
+            0 tabs selected
+          </p>
+          <p id="tab-list-loading" class="tab-list-state">Loading tabs&hellip;</p>
+          <p id="tab-list-empty" class="tab-list-state" hidden>No tabs are open in this window.</p>
+          <div
+            id="tab-list-error"
+            class="tab-list-state tab-list-state--error"
+            role="status"
+            hidden
+          >
+            <p id="tab-list-error-description"></p>
+          </div>
+          <ul id="tab-list" class="tab-list" aria-label="Tabs in the current window"></ul>
         </section>
       </main>
 

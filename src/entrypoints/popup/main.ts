@@ -1,8 +1,18 @@
 import type { DomainErrorCode } from '@/core/types';
-import type { CommandResponse, GetSnapshotCommand, AutomationSnapshot } from '@/messaging/protocol';
+import type {
+  AutomationSnapshot,
+  CommandResponse,
+  GetSnapshotCommand,
+  GetTabListCommand,
+} from '@/messaging/protocol';
 import { browser } from 'wxt/browser';
 import './style.css';
 import { commandErrorMessage, formatNextRun, popupSnapshotModel } from './status-view';
+import {
+  createTabSelectionController,
+  type TabListRequestResult,
+  type TabSelectionElements,
+} from './tab-list';
 
 interface PopupElements {
   statusRegion: HTMLElement;
@@ -18,7 +28,6 @@ interface PopupElements {
   commandError: HTMLElement;
   errorDescription: HTMLElement;
   retryButton: HTMLButtonElement;
-  workspaceDescription: HTMLElement;
   announcement: HTMLElement;
 }
 
@@ -47,8 +56,22 @@ function getElements(): PopupElements {
     commandError: requiredElement('command-error'),
     errorDescription: requiredElement('error-description'),
     retryButton: requiredElement<HTMLButtonElement>('retry-button'),
-    workspaceDescription: requiredElement('workspace-description'),
     announcement: requiredElement('status-announcement'),
+  };
+}
+
+function getTabSelectionElements(): TabSelectionElements {
+  return {
+    region: requiredElement('tab-selection-region'),
+    list: requiredElement<HTMLUListElement>('tab-list'),
+    loadingState: requiredElement('tab-list-loading'),
+    emptyState: requiredElement('tab-list-empty'),
+    errorState: requiredElement('tab-list-error'),
+    errorDescription: requiredElement('tab-list-error-description'),
+    selectionSummary: requiredElement('selection-summary'),
+    selectAllButton: requiredElement<HTMLButtonElement>('select-all-tabs-button'),
+    clearButton: requiredElement<HTMLButtonElement>('clear-tabs-button'),
+    refreshButton: requiredElement<HTMLButtonElement>('refresh-tabs-button'),
   };
 }
 
@@ -56,13 +79,12 @@ function renderLoading(elements: PopupElements): void {
   elements.statusRegion.setAttribute('aria-busy', 'true');
   elements.statusIndicator.dataset.tone = 'neutral';
   elements.statusLabel.textContent = 'Loading';
-  elements.statusDescription.textContent = 'Checking your automation state…';
+  elements.statusDescription.textContent = 'Checking your automation state\u2026';
   elements.nextAction.hidden = true;
   elements.lastResult.hidden = true;
   elements.unsupportedState.hidden = true;
   elements.commandError.hidden = true;
   elements.retryButton.disabled = true;
-  elements.workspaceDescription.textContent = 'Loading automation controls…';
 }
 
 function renderSnapshot(elements: PopupElements, snapshot: AutomationSnapshot): void {
@@ -99,10 +121,6 @@ function renderSnapshot(elements: PopupElements, snapshot: AutomationSnapshot): 
     elements.unsupportedState.hidden = false;
   }
 
-  elements.workspaceDescription.textContent =
-    snapshot.status === 'idle'
-      ? 'No automation is running. Tab selection and controls will appear here.'
-      : 'Automation controls will appear here for the active schedule.';
   elements.announcement.textContent = `Automation status: ${model.status.label}. ${model.status.description}`;
 }
 
@@ -119,7 +137,6 @@ function renderCommandError(elements: PopupElements, code: DomainErrorCode): voi
   elements.errorDescription.textContent = message;
   elements.commandError.hidden = false;
   elements.retryButton.disabled = false;
-  elements.workspaceDescription.textContent = 'Controls are unavailable until status loads.';
   elements.announcement.textContent = `Status unavailable. ${message}`;
 }
 
@@ -146,10 +163,38 @@ async function requestSnapshot(elements: PopupElements): Promise<void> {
   }
 }
 
+async function requestTabList(): Promise<TabListRequestResult> {
+  const command = { type: 'get-tab-list' } satisfies GetTabListCommand;
+
+  try {
+    const response = (await browser.runtime.sendMessage(command)) as
+      CommandResponse<GetTabListCommand> | undefined;
+
+    if (response?.command !== command.type) {
+      return { ok: false, code: 'unexpected-error' };
+    }
+
+    return response.ok
+      ? { ok: true, tabs: response.data }
+      : { ok: false, code: response.error.code };
+  } catch {
+    return { ok: false, code: 'browser-operation-failed' };
+  }
+}
+
 function main(): void {
   const elements = getElements();
+  const tabSelection = createTabSelectionController({
+    elements: getTabSelectionElements(),
+    requestTabList,
+    announce(message) {
+      elements.announcement.textContent = message;
+    },
+  });
+
   elements.retryButton.addEventListener('click', () => void requestSnapshot(elements));
   void requestSnapshot(elements);
+  void tabSelection.load();
 }
 
 main();

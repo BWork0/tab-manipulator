@@ -330,17 +330,23 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T041 — Build current-window tab selection
 
-- [ ] Request the current tab list from the background on popup open.
-- [ ] Render favicon opportunistically without blocking initial interaction.
-- [ ] Show title, domain, pinned state, selection state, and disabled reason.
-- [ ] Implement individual, select-all-eligible, and clear controls.
-- [ ] Keep selection local to the open popup and revalidate it when a command runs.
-- [ ] Measure the initial render with 100 synthetic tab rows.
+- [x] Request the current tab list from the background on popup open.
+- [x] Render favicon opportunistically without blocking initial interaction.
+- [x] Show title, domain, pinned state, selection state, and disabled reason.
+- [x] Implement individual, select-all-eligible, and clear controls.
+- [x] Keep selection local to the open popup and revalidate it when a command runs.
+- [x] Measure the initial render with 100 synthetic tab rows.
 
 **Requirements:** FR-001–003; performance  
 **Depends on:** T040  
 **Likely files:** `src/entrypoints/popup/main.ts`, `src/entrypoints/popup/style.css`, optional `src/ui/tab-list.ts`  
 **Acceptance:** Eligible selection works by mouse and keyboard; restricted/missing-data tabs render safely; reference render is under 500 ms.
+
+**Verification evidence (2026-08-06):**
+
+- Focused popup tests passed six interaction, fallback, error, revalidation, deferred-favicon, and performance cases. Native checkbox/button controls cover mouse and keyboard operation without custom key handling.
+- The 100-row LinkeDOM render measured 4.71 ms on Windows 10.0.19045 with Node.js 24.10.0 on an Intel64 Family 6 Model 167 processor, below the 500 ms acceptance threshold.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, the complete automated suite, and Chromium/Firefox MV3 production builds.
 
 ### T042 — Build rotation controls
 

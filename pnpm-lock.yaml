@@ -11,6 +11,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 4.1.10
         version: 4.1.10(vitest@4.1.10)
+      linkedom:
+        specifier: 0.18.13
+        version: 0.18.13
       lint-staged:
         specifier: ^17.3.0
         version: 17.3.0
