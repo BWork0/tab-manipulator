@@ -275,12 +275,12 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T031 — Implement refresh lifecycle service
 
-- [ ] Validate 30-second minimum and selected targets at schedule start.
-- [ ] Confirm replacement intent when another refresh schedule is active.
-- [ ] Implement start, stop, due-run, and refresh-now handlers.
-- [ ] Reconcile before every pass, attempt all valid targets independently, persist result/timestamps, and schedule the next pass.
-- [ ] Keep refresh-now independent of an existing schedule's next due time.
-- [ ] Make repeated stop/due commands idempotent.
+- [x] Validate 30-second minimum and selected targets at schedule start.
+- [x] Confirm replacement intent when another refresh schedule is active.
+- [x] Implement start, stop, due-run, and refresh-now handlers.
+- [x] Reconcile before every pass, attempt all valid targets independently, persist result/timestamps, and schedule the next pass.
+- [x] Keep refresh-now independent of an existing schedule's next due time.
+- [x] Make repeated stop/due commands idempotent.
 
 **Requirements:** FR-020–022, FR-030, FR-031, FR-041–043  
 **Depends on:** T015, T020–T025  
