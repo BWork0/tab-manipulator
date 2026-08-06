@@ -408,15 +408,21 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T050 — Create the WXT options entrypoint
 
-- [ ] Add the one-level `src/entrypoints/options/` HTML entrypoint and TypeScript/CSS assets.
-- [ ] Load the current typed settings on open.
-- [ ] Include clear save state, unsaved-change behavior, and accessible status feedback.
-- [ ] Avoid putting runtime browser calls outside the WXT entrypoint execution path.
+- [x] Add the one-level `src/entrypoints/options/` HTML entrypoint and TypeScript/CSS assets.
+- [x] Load the current typed settings on open.
+- [x] Include clear save state, unsaved-change behavior, and accessible status feedback.
+- [x] Avoid putting runtime browser calls outside the WXT entrypoint execution path.
 
 **Requirements:** FR-040; section 8.1  
 **Depends on:** T020, T023, T033  
 **Likely files:** `src/entrypoints/options/index.html`, `src/entrypoints/options/main.ts`, `src/entrypoints/options/style.css`  
 **Acceptance:** WXT generates `options.html`; settings load and the page works in Chromium and Firefox builds.
+
+**Verification evidence (2026-08-06):**
+
+- Six focused options tests passed typed background-protocol loading and rendering, saved and unsaved states, unload warning and discard behavior, atomic save with duplicate-submit suppression, failed-save draft preservation, and load retry.
+- Chromium and Firefox MV3 production builds generated `options.html`; both manifests reference it through `options_ui.page` with tab-based opening enabled.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 256 automated tests, and Chromium/Firefox MV3 production builds.
 
 ### T051 — Implement defaults and pinned-tab settings
 

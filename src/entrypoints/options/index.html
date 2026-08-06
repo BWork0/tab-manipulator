@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tab Manipulator settings</title>
+    <meta name="manifest.open_in_tab" content="true" />
+  </head>
+  <body>
+    <div class="options-shell">
+      <header class="page-header">
+        <p class="eyebrow">Tab Manipulator</p>
+        <h1>Advanced settings</h1>
+        <p>Review the defaults and filters used when you start tab automation.</p>
+      </header>
+
+      <main>
+        <form id="settings-form" novalidate>
+          <section
+            id="settings-region"
+            class="settings-card"
+            aria-labelledby="settings-heading"
+            aria-busy="true"
+          >
+            <div class="section-heading">
+              <div>
+                <h2 id="settings-heading">Saved settings</h2>
+                <p>These values are stored locally by the extension.</p>
+              </div>
+              <p
+                id="save-status"
+                class="save-status"
+                data-state="loading"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                Loading saved settings&hellip;
+              </p>
+            </div>
+
+            <dl id="settings-summary" class="settings-summary" aria-disabled="true">
+              <div>
+                <dt>Rotation interval</dt>
+                <dd id="rotation-interval-summary">Loading&hellip;</dd>
+              </div>
+              <div>
+                <dt>Rotation direction</dt>
+                <dd id="rotation-direction-summary">Loading&hellip;</dd>
+              </div>
+              <div>
+                <dt>Refresh interval</dt>
+                <dd id="refresh-interval-summary">Loading&hellip;</dd>
+              </div>
+              <div>
+                <dt>Pinned tabs</dt>
+                <dd id="pinned-tabs-summary">Loading&hellip;</dd>
+              </div>
+              <div>
+                <dt>Allowlist</dt>
+                <dd id="allowlist-summary">Loading&hellip;</dd>
+              </div>
+              <div>
+                <dt>Blocklist</dt>
+                <dd id="blocklist-summary">Loading&hellip;</dd>
+              </div>
+            </dl>
+
+            <div class="form-actions">
+              <button id="save-settings-button" type="submit" disabled>Save changes</button>
+              <button id="discard-settings-button" class="button--quiet" type="button" disabled>
+                Discard changes
+              </button>
+              <button id="retry-settings-button" class="button--quiet" type="button" hidden>
+                Try again
+              </button>
+            </div>
+          </section>
+        </form>
+      </main>
+    </div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
