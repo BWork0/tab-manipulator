@@ -245,12 +245,12 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T025 — Implement conservative startup recovery
 
-- [ ] Revalidate persisted live IDs and URL descriptors on background load.
-- [ ] When IDs are stale, score open windows by exact URL matches and relative order.
-- [ ] Resume only a unique, complete match; otherwise store `needs-attention` and schedule nothing.
-- [ ] Perform at most one due action after wake/reload, then schedule from now.
-- [ ] Restore exactly one alarm/timeout for each recoverable schedule.
-- [ ] Add tests for same-session background reload, clean browser restart, duplicate URL ambiguity, partial restoration, and expired due times.
+- [x] Revalidate persisted live IDs and URL descriptors on background load.
+- [x] When IDs are stale, score open windows by exact URL matches and relative order.
+- [x] Resume only a unique, complete match; otherwise store `needs-attention` and schedule nothing.
+- [x] Perform at most one due action after wake/reload, then schedule from now.
+- [x] Restore exactly one alarm/timeout for each recoverable schedule.
+- [x] Add tests for same-session background reload, clean browser restart, duplicate URL ambiguity, partial restoration, and expired due times.
 
 **Requirements:** FR-043; edge-case table  
 **Depends on:** T013, T021, T022, T024  
