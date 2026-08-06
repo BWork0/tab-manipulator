@@ -1,5 +1,4 @@
-import { MIN_ROTATION_INTERVAL_MS } from '@/core/defaults';
-import type { DomainErrorCode, RotationDirection } from '@/core/types';
+import type { DomainErrorCode } from '@/core/types';
 import type {
   AutomationSnapshot,
   PauseRotationCommand,
@@ -7,6 +6,11 @@ import type {
   StartRotationCommand,
   StopRotationCommand,
 } from '@/messaging/protocol';
+import {
+  intervalSecondsToMs,
+  isRotationDirection,
+  validateRotationIntervalMs,
+} from '@/ui/validation';
 import { createPopupOperationGate, type PopupOperationGate } from './operation-gate';
 import { commandErrorMessage } from './status-view';
 
@@ -49,23 +53,12 @@ export interface RotationControlsOptions {
 
 const ROTATION_PRESETS = new Set([10_000, 30_000, 60_000]);
 
-function isDirection(value: string): value is RotationDirection {
-  return value === 'forward' || value === 'backward' || value === 'random';
-}
-
 function selectedIntervalMs(elements: RotationControlElements): number | null {
-  if (elements.interval.value !== 'custom') {
-    const intervalMs = Number(elements.interval.value);
-    return Number.isSafeInteger(intervalMs) && intervalMs >= MIN_ROTATION_INTERVAL_MS
-      ? intervalMs
-      : null;
-  }
-
-  const seconds = Number(elements.customInterval.value);
-  const intervalMs = seconds * 1_000;
-  return Number.isFinite(seconds) && Number.isSafeInteger(intervalMs) && intervalMs >= 10_000
-    ? intervalMs
-    : null;
+  const intervalMs =
+    elements.interval.value === 'custom'
+      ? intervalSecondsToMs(elements.customInterval.value)
+      : Number(elements.interval.value);
+  return validateRotationIntervalMs(intervalMs);
 }
 
 function selectOption(select: HTMLSelectElement, value: string): boolean {
@@ -255,7 +248,7 @@ export function createRotationControlsController({
 
     const direction = elements.direction.value;
 
-    if (!isDirection(direction)) {
+    if (!isRotationDirection(direction)) {
       showValidation('Choose a valid rotation direction.');
       elements.direction.focus();
       return;

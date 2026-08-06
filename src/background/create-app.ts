@@ -186,7 +186,9 @@ function commandAttentionKinds(command: Command): readonly ScheduleKind[] {
 
 function validateSettings(settings: Settings): void {
   if (
+    !Number.isSafeInteger(settings.rotationIntervalMs) ||
     settings.rotationIntervalMs < MIN_ROTATION_INTERVAL_MS ||
+    !Number.isSafeInteger(settings.refreshIntervalMs) ||
     settings.refreshIntervalMs < MIN_REFRESH_INTERVAL_MS ||
     !parseRuleConfiguration(settings.allowlist, settings.blocklist).valid
   ) {

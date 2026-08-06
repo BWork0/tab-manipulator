@@ -302,6 +302,33 @@ describe('rotation lifecycle service', () => {
     });
   });
 
+  it('revalidates an active rotation on its next tick after pinned tabs are excluded', async () => {
+    const tabs = [
+      tab('first', 0, { active: true }),
+      tab('pinned', 1, { pinned: true }),
+      tab('second', 2),
+    ];
+    const test = fixture(tabs);
+    test.setSettings({ ...DEFAULT_SETTINGS, includePinned: true });
+    const started = await test.service.start(
+      startInput({ targetKeys: tabs.map(({ key }) => key) }),
+    );
+    expect(started.targets.map(({ key }) => key)).toEqual(['first', 'pinned', 'second']);
+
+    test.setSettings({ ...DEFAULT_SETTINGS, includePinned: false });
+    test.clock.time = 12_000;
+    const tick = await test.service.handleDueTick(due(started));
+
+    expect(tick.status).toBe('completed');
+    expect(test.readSettings).toHaveBeenCalledTimes(2);
+    expect(test.session?.targets.map(({ key }) => key)).toEqual(['first', 'second']);
+    expect(test.session?.lastResult?.targets).toContainEqual({
+      status: 'skipped',
+      targetKey: 'pinned',
+      reason: 'pinned-tab-excluded',
+    });
+  });
+
   it('stops safely with an explanation when tab closure leaves fewer than two targets', async () => {
     const test = fixture([tab('first', 0, { active: true }), tab('second', 1)]);
     const started = await test.service.start(startInput({ targetKeys: ['first', 'second'] }));

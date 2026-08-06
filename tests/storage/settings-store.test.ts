@@ -90,7 +90,9 @@ describe.sequential('settings store', () => {
 
   it('survives a simulated background module reload', async () => {
     const expected = await updateSettings({
+      rotationIntervalMs: 45_000,
       rotationDirection: 'random',
+      refreshIntervalMs: 90_000,
       includePinned: true,
       allowlist: ['dashboards.example'],
     });

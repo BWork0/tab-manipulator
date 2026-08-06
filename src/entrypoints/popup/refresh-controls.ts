@@ -1,4 +1,3 @@
-import { MIN_REFRESH_INTERVAL_MS } from '@/core/defaults';
 import type { ActionResultSummary, DomainErrorCode } from '@/core/types';
 import type {
   AutomationSnapshot,
@@ -6,6 +5,7 @@ import type {
   StartRefreshCommand,
   StopRefreshCommand,
 } from '@/messaging/protocol';
+import { intervalSecondsToMs, validateRefreshIntervalMs } from '@/ui/validation';
 import { createPopupOperationGate, type PopupOperationGate } from './operation-gate';
 import { commandErrorMessage } from './status-view';
 
@@ -49,20 +49,11 @@ export interface RefreshControlsOptions {
 const REFRESH_PRESETS = new Set([30_000, 60_000, 300_000]);
 
 function selectedIntervalMs(elements: RefreshControlElements): number | null {
-  if (elements.interval.value !== 'custom') {
-    const intervalMs = Number(elements.interval.value);
-    return Number.isSafeInteger(intervalMs) && intervalMs >= MIN_REFRESH_INTERVAL_MS
-      ? intervalMs
-      : null;
-  }
-
-  const seconds = Number(elements.customInterval.value);
-  const intervalMs = seconds * 1_000;
-  return Number.isFinite(seconds) &&
-    Number.isSafeInteger(intervalMs) &&
-    intervalMs >= MIN_REFRESH_INTERVAL_MS
-    ? intervalMs
-    : null;
+  const intervalMs =
+    elements.interval.value === 'custom'
+      ? intervalSecondsToMs(elements.customInterval.value)
+      : Number(elements.interval.value);
+  return validateRefreshIntervalMs(intervalMs);
 }
 
 function selectOption(select: HTMLSelectElement, value: string): boolean {

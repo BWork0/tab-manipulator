@@ -426,16 +426,22 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T051 — Implement defaults and pinned-tab settings
 
-- [ ] Add default rotation interval/direction and refresh interval controls.
-- [ ] Add the shared include-pinned toggle with excluded as the default.
-- [ ] Reuse the same interval validators as the popup.
-- [ ] Save a complete validated settings update through the background.
-- [ ] Verify active schedules revalidate on their next action after a setting changes.
+- [x] Add default rotation interval/direction and refresh interval controls.
+- [x] Add the shared include-pinned toggle with excluded as the default.
+- [x] Reuse the same interval validators as the popup.
+- [x] Save a complete validated settings update through the background.
+- [x] Verify active schedules revalidate on their next action after a setting changes.
 
 **Requirements:** FR-030, FR-040  
 **Depends on:** T050  
 **Likely files:** `src/entrypoints/options/main.ts`, shared `src/ui/validation.ts`  
 **Acceptance:** Values persist across browser restart and invalid values cannot overwrite the last valid settings.
+
+**Verification evidence (2026-08-06):**
+
+- Fifty-two focused tests passed editable preset/custom defaults, excluded-by-default pinned behavior, shared popup/options interval validation, complete background updates, invalid-update preservation, and next-action pinned revalidation for active rotation and refresh schedules.
+- The settings-store reload test persisted custom rotation and refresh intervals, direction, and pinned behavior across a simulated background module restart.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 266 automated tests, and Chromium/Firefox MV3 production builds.
 
 ### T052 — Implement allowlist/blocklist editor
 

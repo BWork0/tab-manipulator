@@ -266,6 +266,31 @@ describe('refresh lifecycle service', () => {
     });
   });
 
+  it('revalidates an active refresh on its next pass after pinned tabs are excluded', async () => {
+    const tabs = [tab('first', 0), tab('pinned', 1, { pinned: true }), tab('second', 2)];
+    const test = fixture(tabs);
+    test.setSettings({ ...DEFAULT_SETTINGS, includePinned: true });
+    const started = await test.service.start(
+      startInput({ targetKeys: tabs.map(({ key }) => key) }),
+    );
+    expect(started.targets.map(({ key }) => key)).toEqual(['first', 'pinned', 'second']);
+
+    test.setSettings({ ...DEFAULT_SETTINGS, includePinned: false });
+    test.clock.time = 40_000;
+    const run = await test.service.handleDueRun(due(started));
+
+    expect(run.status).toBe('completed');
+    expect(test.readSettings).toHaveBeenCalledTimes(2);
+    expect(test.browser.reloadTab).toHaveBeenCalledTimes(2);
+    expect(test.browser.reloadTab).not.toHaveBeenCalledWith(11);
+    expect(test.refreshSchedule?.targets.map(({ key }) => key)).toEqual(['first', 'second']);
+    expect(test.refreshSchedule?.lastResult?.targets).toContainEqual({
+      status: 'skipped',
+      targetKey: 'pinned',
+      reason: 'pinned-tab-excluded',
+    });
+  });
+
   it('performs at most one delayed pass and ignores duplicate delivery of the consumed due timestamp', async () => {
     const test = fixture();
     const started = await test.service.start(startInput());

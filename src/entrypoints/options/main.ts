@@ -10,9 +10,9 @@ import {
   createOptionsPageController,
   type LoadSettingsResult,
   type OptionsPageElements,
-  type OptionsSettingsEditor,
   type SaveSettingsResult,
 } from './options-controller';
+import { createOptionsSettingsEditor, type OptionsSettingsEditorElements } from './settings-editor';
 
 function requiredElement<TElement extends HTMLElement>(id: string): TElement {
   const element = document.querySelector<HTMLElement>(`#${id}`);
@@ -22,24 +22,6 @@ function requiredElement<TElement extends HTMLElement>(id: string): TElement {
   }
 
   return element as TElement;
-}
-
-function formatInterval(intervalMs: number): string {
-  if (intervalMs % 60_000 === 0) {
-    const minutes = intervalMs / 60_000;
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
-  }
-
-  const seconds = intervalMs / 1_000;
-  return `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
-}
-
-function formatRuleCount(rules: readonly string[], emptyLabel: string): string {
-  if (rules.length === 0) {
-    return emptyLabel;
-  }
-
-  return `${rules.length} ${rules.length === 1 ? 'rule' : 'rules'}`;
 }
 
 function getElements(): OptionsPageElements {
@@ -53,34 +35,23 @@ function getElements(): OptionsPageElements {
   };
 }
 
-function createSummaryEditor(): OptionsSettingsEditor {
-  const rotationInterval = requiredElement('rotation-interval-summary');
-  const rotationDirection = requiredElement('rotation-direction-summary');
-  const refreshInterval = requiredElement('refresh-interval-summary');
-  const pinnedTabs = requiredElement('pinned-tabs-summary');
-  const allowlist = requiredElement('allowlist-summary');
-  const blocklist = requiredElement('blocklist-summary');
-  let currentSettings: Settings | null = null;
-
+function getSettingsEditorElements(): OptionsSettingsEditorElements {
   return {
-    read: () => currentSettings,
-    write(settings) {
-      currentSettings = settings;
-      rotationInterval.textContent = formatInterval(settings.rotationIntervalMs);
-      rotationDirection.textContent =
-        settings.rotationDirection === 'forward'
-          ? 'Forward (left to right)'
-          : settings.rotationDirection === 'backward'
-            ? 'Backward (right to left)'
-            : 'Random';
-      refreshInterval.textContent = formatInterval(settings.refreshIntervalMs);
-      pinnedTabs.textContent = settings.includePinned ? 'Included' : 'Excluded';
-      allowlist.textContent = formatRuleCount(settings.allowlist, 'All eligible URLs allowed');
-      blocklist.textContent = formatRuleCount(settings.blocklist, 'No blocked URLs');
-    },
-    setDisabled(disabled) {
-      requiredElement('settings-summary').setAttribute('aria-disabled', String(disabled));
-    },
+    fields: requiredElement<HTMLFieldSetElement>('automation-defaults'),
+    rotationInterval: requiredElement<HTMLSelectElement>('default-rotation-interval'),
+    rotationCustomGroup: requiredElement('default-rotation-custom-group'),
+    rotationCustom: requiredElement<HTMLInputElement>('default-rotation-custom'),
+    rotationValidation: requiredElement('default-rotation-validation'),
+    rotationDirection: requiredElement<HTMLSelectElement>('default-rotation-direction'),
+    directionValidation: requiredElement('default-direction-validation'),
+    refreshInterval: requiredElement<HTMLSelectElement>('default-refresh-interval'),
+    refreshCustomGroup: requiredElement('default-refresh-custom-group'),
+    refreshCustom: requiredElement<HTMLInputElement>('default-refresh-custom'),
+    refreshValidation: requiredElement('default-refresh-validation'),
+    includePinned: requiredElement<HTMLInputElement>('include-pinned-tabs'),
+    settingsSummary: requiredElement('settings-summary'),
+    allowlistSummary: requiredElement('allowlist-summary'),
+    blocklistSummary: requiredElement('blocklist-summary'),
   };
 }
 
@@ -125,7 +96,7 @@ function main(): void {
 
   const controller = createOptionsPageController({
     elements: getElements(),
-    editor: createSummaryEditor(),
+    editor: createOptionsSettingsEditor(getSettingsEditorElements()),
     loadSettings,
     saveSettings,
   });

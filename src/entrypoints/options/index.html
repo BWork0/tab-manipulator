@@ -24,8 +24,8 @@
           >
             <div class="section-heading">
               <div>
-                <h2 id="settings-heading">Saved settings</h2>
-                <p>These values are stored locally by the extension.</p>
+                <h2 id="settings-heading">Automation defaults</h2>
+                <p>These values are stored locally and prefill new automation sessions.</p>
               </div>
               <p
                 id="save-status"
@@ -39,23 +39,99 @@
               </p>
             </div>
 
+            <fieldset id="automation-defaults" class="settings-fields" disabled>
+              <legend>Defaults and pinned tabs</legend>
+
+              <div class="field-group">
+                <label for="default-rotation-interval">Default rotation interval</label>
+                <select
+                  id="default-rotation-interval"
+                  aria-describedby="default-rotation-validation"
+                >
+                  <option value="10000">10 seconds</option>
+                  <option value="30000">30 seconds</option>
+                  <option value="60000">1 minute</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <div id="default-rotation-custom-group" class="custom-interval" hidden>
+                  <label for="default-rotation-custom">Custom interval in seconds</label>
+                  <input
+                    id="default-rotation-custom"
+                    type="number"
+                    min="10"
+                    step="1"
+                    inputmode="numeric"
+                    value="10"
+                    aria-describedby="default-rotation-validation"
+                  />
+                </div>
+                <p
+                  id="default-rotation-validation"
+                  class="validation-message"
+                  role="alert"
+                  hidden
+                ></p>
+              </div>
+
+              <div class="field-group">
+                <label for="default-rotation-direction">Default rotation direction</label>
+                <select
+                  id="default-rotation-direction"
+                  aria-describedby="default-direction-validation"
+                >
+                  <option value="forward">Forward (left to right)</option>
+                  <option value="backward">Backward (right to left)</option>
+                  <option value="random">Random</option>
+                </select>
+                <p
+                  id="default-direction-validation"
+                  class="validation-message"
+                  role="alert"
+                  hidden
+                ></p>
+              </div>
+
+              <div class="field-group">
+                <label for="default-refresh-interval">Default refresh interval</label>
+                <select id="default-refresh-interval" aria-describedby="default-refresh-validation">
+                  <option value="30000">30 seconds</option>
+                  <option value="60000">1 minute</option>
+                  <option value="300000">5 minutes</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <div id="default-refresh-custom-group" class="custom-interval" hidden>
+                  <label for="default-refresh-custom">Custom interval in seconds</label>
+                  <input
+                    id="default-refresh-custom"
+                    type="number"
+                    min="30"
+                    step="1"
+                    inputmode="numeric"
+                    value="300"
+                    aria-describedby="default-refresh-validation"
+                  />
+                </div>
+                <p
+                  id="default-refresh-validation"
+                  class="validation-message"
+                  role="alert"
+                  hidden
+                ></p>
+              </div>
+
+              <div class="field-group field-group--wide">
+                <label class="checkbox-label" for="include-pinned-tabs">
+                  <input id="include-pinned-tabs" type="checkbox" />
+                  Include pinned tabs in rotation and refresh
+                </label>
+                <p class="field-help">
+                  Pinned tabs are excluded by default. A change applies when each active schedule
+                  next runs.
+                </p>
+              </div>
+            </fieldset>
+
             <dl id="settings-summary" class="settings-summary" aria-disabled="true">
-              <div>
-                <dt>Rotation interval</dt>
-                <dd id="rotation-interval-summary">Loading&hellip;</dd>
-              </div>
-              <div>
-                <dt>Rotation direction</dt>
-                <dd id="rotation-direction-summary">Loading&hellip;</dd>
-              </div>
-              <div>
-                <dt>Refresh interval</dt>
-                <dd id="refresh-interval-summary">Loading&hellip;</dd>
-              </div>
-              <div>
-                <dt>Pinned tabs</dt>
-                <dd id="pinned-tabs-summary">Loading&hellip;</dd>
-              </div>
               <div>
                 <dt>Allowlist</dt>
                 <dd id="allowlist-summary">Loading&hellip;</dd>

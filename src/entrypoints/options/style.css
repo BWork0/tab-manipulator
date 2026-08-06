@@ -42,6 +42,12 @@ body {
   line-height: 1.5;
 }
 
+button,
+input,
+select {
+  font: inherit;
+}
+
 button {
   min-height: 2.75rem;
   padding: 0.65rem 1rem;
@@ -49,7 +55,6 @@ button {
   border-radius: 0.55rem;
   color: #ffffff;
   background: var(--accent);
-  font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
@@ -59,7 +64,9 @@ button:hover:not(:disabled) {
   background: var(--accent-strong);
 }
 
-button:focus-visible {
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
   outline: 0.1875rem solid var(--focus);
   outline-offset: 0.1875rem;
 }
@@ -161,6 +168,86 @@ h2 {
   color: var(--error);
 }
 
+.settings-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  min-width: 0;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.65rem;
+}
+
+.settings-fields legend {
+  padding: 0 0.4rem;
+  font-weight: 800;
+}
+
+.field-group {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.field-group > label,
+.checkbox-label {
+  font-weight: 700;
+}
+
+.field-group--wide {
+  grid-column: 1 / -1;
+}
+
+input[type='number'],
+select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.65rem;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  background: var(--surface-subtle);
+}
+
+.custom-interval {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.checkbox-label input {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin: 0.15rem 0 0;
+  accent-color: var(--accent);
+}
+
+.field-help,
+.validation-message {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.field-help {
+  color: var(--muted);
+}
+
+.validation-message {
+  color: var(--error);
+  font-weight: 700;
+}
+
+[aria-invalid='true'] {
+  border-color: var(--error);
+}
+
 .settings-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -237,8 +324,11 @@ h2 {
 
 @media (forced-colors: active) {
   button,
+  input,
+  select,
   .save-status,
   .settings-card,
+  .settings-fields,
   .settings-summary div {
     border: 0.125rem solid currentColor;
   }
@@ -262,6 +352,14 @@ h2 {
 
   .settings-summary {
     grid-template-columns: 1fr;
+  }
+
+  .settings-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .field-group--wide {
+    grid-column: auto;
   }
 
   .form-actions button {

@@ -362,6 +362,31 @@ describe('background application', () => {
     expect(harness.settingsStore.updateSettings).toHaveBeenCalledWith(DEFAULT_SETTINGS);
   });
 
+  it('rejects invalid complete settings without overwriting the last valid update', async () => {
+    const harness = createHarness();
+    const validSettings = { ...DEFAULT_SETTINGS, includePinned: true };
+    harness.settingsStore.updateSettings.mockResolvedValueOnce(validSettings);
+    harness.application.start();
+    await harness.application.whenReady();
+
+    await expect(send({ type: 'update-settings', settings: validSettings })).resolves.toMatchObject(
+      { ok: true, command: 'update-settings' },
+    );
+    await expect(
+      send({
+        type: 'update-settings',
+        settings: { ...validSettings, rotationIntervalMs: 9_999 },
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      command: 'update-settings',
+      error: { code: 'invalid-settings' },
+    });
+
+    expect(harness.settingsStore.updateSettings).toHaveBeenCalledOnce();
+    expect(harness.settingsStore.updateSettings).toHaveBeenCalledWith(validSettings);
+  });
+
   it('rejects malformed messages before they reach services', async () => {
     const harness = createHarness();
     harness.application.start();

@@ -1,5 +1,6 @@
 import { DEFAULT_SETTINGS } from '@/core/defaults';
-import type { AutomationSnapshot } from '@/messaging/protocol';
+import type { Settings } from '@/core/types';
+import type { AutomationSnapshot, Command } from '@/messaging/protocol';
 import { createRuntimeMessageListener } from '@/messaging/protocol';
 import { parseHTML } from 'linkedom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -28,31 +29,76 @@ const SNAPSHOT: AutomationSnapshot = {
   },
 };
 
+function createDocument() {
+  return parseHTML(`
+    <main id="settings-region" aria-busy="true">
+      <form id="settings-form">
+        <fieldset id="automation-defaults">
+          <select id="default-rotation-interval">
+            <option value="10000">10 seconds</option>
+            <option value="30000">30 seconds</option>
+            <option value="60000">1 minute</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div id="default-rotation-custom-group" hidden>
+            <input id="default-rotation-custom" value="10" />
+          </div>
+          <p id="default-rotation-validation" hidden></p>
+          <select id="default-rotation-direction">
+            <option value="forward">Forward</option>
+            <option value="backward">Backward</option>
+            <option value="random">Random</option>
+          </select>
+          <p id="default-direction-validation" hidden></p>
+          <select id="default-refresh-interval">
+            <option value="30000">30 seconds</option>
+            <option value="60000">1 minute</option>
+            <option value="300000">5 minutes</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div id="default-refresh-custom-group" hidden>
+            <input id="default-refresh-custom" value="300" />
+          </div>
+          <p id="default-refresh-validation" hidden></p>
+          <input id="include-pinned-tabs" type="checkbox" />
+        </fieldset>
+        <dl id="settings-summary">
+          <dd id="allowlist-summary"></dd>
+          <dd id="blocklist-summary"></dd>
+        </dl>
+        <p id="save-status"></p>
+        <button id="save-settings-button" type="submit"></button>
+        <button id="discard-settings-button" type="button"></button>
+        <button id="retry-settings-button" type="button"></button>
+      </form>
+    </main>
+  `);
+}
+
+function required<TElement extends Element>(document: Document, selector: string): TElement {
+  const element = document.querySelector(selector);
+
+  if (element === null) {
+    throw new Error(`Missing test element: ${selector}.`);
+  }
+
+  return element as TElement;
+}
+
+function selectValue(select: HTMLSelectElement, value: string): void {
+  for (const option of select.options) {
+    option.selected = option.value === value;
+  }
+}
+
 afterEach(() => {
   vi.resetModules();
   vi.unstubAllGlobals();
 });
 
 describe('options entrypoint', () => {
-  it('loads and renders the current typed settings through the background protocol', async () => {
-    const { document, window } = parseHTML(`
-      <main id="settings-region" aria-busy="true">
-        <form id="settings-form">
-          <dl id="settings-summary">
-            <dd id="rotation-interval-summary"></dd>
-            <dd id="rotation-direction-summary"></dd>
-            <dd id="refresh-interval-summary"></dd>
-            <dd id="pinned-tabs-summary"></dd>
-            <dd id="allowlist-summary"></dd>
-            <dd id="blocklist-summary"></dd>
-          </dl>
-          <p id="save-status"></p>
-          <button id="save-settings-button" type="submit"></button>
-          <button id="discard-settings-button" type="button"></button>
-          <button id="retry-settings-button" type="button"></button>
-        </form>
-      </main>
-    `);
+  it('loads and renders editable defaults through the background protocol', async () => {
+    const { document, window } = createDocument();
     const handler = vi.fn(async () => ({
       ok: true as const,
       command: 'get-snapshot' as const,
@@ -70,14 +116,89 @@ describe('options entrypoint', () => {
       expect(document.querySelector('#save-status')?.textContent).toBe('All changes saved.'),
     );
     expect(sendMessage).toHaveBeenCalledWith({ type: 'get-snapshot' });
-    expect(document.querySelector('#rotation-interval-summary')?.textContent).toBe('1 minute');
-    expect(document.querySelector('#rotation-direction-summary')?.textContent).toBe(
-      'Backward (right to left)',
+    expect(required<HTMLSelectElement>(document, '#default-rotation-interval').value).toBe('60000');
+    expect(required<HTMLSelectElement>(document, '#default-rotation-direction').value).toBe(
+      'backward',
     );
-    expect(document.querySelector('#refresh-interval-summary')?.textContent).toBe('5 minutes');
-    expect(document.querySelector('#pinned-tabs-summary')?.textContent).toBe('Included');
+    expect(required<HTMLSelectElement>(document, '#default-refresh-interval').value).toBe('300000');
+    expect(required<HTMLInputElement>(document, '#include-pinned-tabs').checked).toBe(true);
     expect(document.querySelector('#allowlist-summary')?.textContent).toBe('1 rule');
     expect(document.querySelector('#blocklist-summary')?.textContent).toBe('2 rules');
     expect(document.querySelector('#settings-region')?.getAttribute('aria-busy')).toBe('false');
+  });
+
+  it('blocks invalid defaults and saves one complete validated settings update', async () => {
+    const { document, window } = createDocument();
+    const handler = vi.fn(async (command: Command) => {
+      if (command.type === 'get-snapshot') {
+        return { ok: true as const, command: command.type, data: SNAPSHOT };
+      }
+
+      if (command.type === 'update-settings') {
+        return {
+          ok: true as const,
+          command: command.type,
+          data: {
+            settings: command.settings,
+            snapshot: { ...SNAPSHOT, settings: command.settings },
+          },
+        };
+      }
+
+      throw new Error('Unexpected test command.');
+    });
+    fakeBrowser.runtime.onMessage.addListener(createRuntimeMessageListener(handler) as never);
+    vi.stubGlobal('document', document);
+    vi.stubGlobal('window', window);
+    await import('@/entrypoints/options/main');
+    await vi.waitFor(() =>
+      expect(document.querySelector('#save-status')?.textContent).toBe('All changes saved.'),
+    );
+
+    const form = required<HTMLFormElement>(document, '#settings-form');
+    const rotationInterval = required<HTMLSelectElement>(document, '#default-rotation-interval');
+    const rotationCustom = required<HTMLInputElement>(document, '#default-rotation-custom');
+    selectValue(rotationInterval, 'custom');
+    rotationCustom.value = '9';
+    rotationCustom.dispatchEvent(new window.Event('input', { bubbles: true }));
+    form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+
+    await vi.waitFor(() =>
+      expect(document.querySelector('#save-status')?.textContent).toContain('need attention'),
+    );
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('#default-rotation-validation')?.textContent).toBe(
+      'Enter at least 10 seconds.',
+    );
+
+    const refreshInterval = required<HTMLSelectElement>(document, '#default-refresh-interval');
+    const refreshCustom = required<HTMLInputElement>(document, '#default-refresh-custom');
+    const direction = required<HTMLSelectElement>(document, '#default-rotation-direction');
+    const includePinned = required<HTMLInputElement>(document, '#include-pinned-tabs');
+    rotationCustom.value = '45';
+    selectValue(refreshInterval, 'custom');
+    refreshCustom.value = '90';
+    selectValue(direction, 'random');
+    includePinned.checked = false;
+    refreshCustom.dispatchEvent(new window.Event('input', { bubbles: true }));
+    direction.dispatchEvent(new window.Event('change', { bubbles: true }));
+    includePinned.dispatchEvent(new window.Event('change', { bubbles: true }));
+    form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+
+    await vi.waitFor(() => expect(handler).toHaveBeenCalledTimes(2));
+    const savedSettings: Settings = {
+      ...SNAPSHOT.settings,
+      rotationIntervalMs: 45_000,
+      rotationDirection: 'random',
+      refreshIntervalMs: 90_000,
+      includePinned: false,
+    };
+    expect(handler).toHaveBeenLastCalledWith(
+      { type: 'update-settings', settings: savedSettings },
+      expect.anything(),
+    );
+    await vi.waitFor(() =>
+      expect(document.querySelector('#save-status')?.textContent).toBe('Changes saved.'),
+    );
   });
 });
