@@ -231,12 +231,12 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T024 — Implement the hybrid scheduler abstraction
 
-- [ ] Define schedule, cancel, recover, and due-event interfaces with injectable clock/timer dependencies.
-- [ ] Use alarms for all refresh schedules and all intervals at or above 30 seconds.
-- [ ] Use an in-memory timeout only for rotation below 30 seconds.
-- [ ] Enforce deterministic alarm names and single listener registration.
-- [ ] Recalculate `nextRunAt` from actual action completion/resume time and never replay a backlog.
-- [ ] Test the 29,999/30,000 ms boundary, delayed callbacks, cancellation, duplicate callback delivery, and clock changes.
+- [x] Define schedule, cancel, recover, and due-event interfaces with injectable clock/timer dependencies.
+- [x] Use alarms for all refresh schedules and all intervals at or above 30 seconds.
+- [x] Use an in-memory timeout only for rotation below 30 seconds.
+- [x] Enforce deterministic alarm names and single listener registration.
+- [x] Recalculate `nextRunAt` from actual action completion/resume time and never replay a backlog.
+- [x] Test the 29,999/30,000 ms boundary, delayed callbacks, cancellation, duplicate callback delivery, and clock changes.
 
 **Requirements:** FR-042  
 **Depends on:** T010, T021, T022  
