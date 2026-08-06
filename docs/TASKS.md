@@ -289,11 +289,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T032 — Implement automation snapshot and badge service
 
-- [ ] Combine persisted rotation, refresh, capability, and recent-result state into one popup snapshot.
-- [ ] Map idle/running/paused/needs-attention combinations to the PRD badge text, color, and title.
-- [ ] Clear the badge when the final schedule stops.
-- [ ] Treat badge errors as non-fatal and observable in structured logs/results.
-- [ ] Add tests for each state combination.
+- [x] Combine persisted rotation, refresh, capability, and recent-result state into one popup snapshot.
+- [x] Map idle/running/paused/needs-attention combinations to the PRD badge text, color, and title.
+- [x] Clear the badge when the final schedule stops.
+- [x] Treat badge errors as non-fatal and observable in structured logs/results.
+- [x] Add tests for each state combination.
 
 **Requirements:** FR-051; section 8.4  
 **Depends on:** T021, T022, T030, T031  
