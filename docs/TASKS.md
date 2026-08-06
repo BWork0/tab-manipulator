@@ -302,11 +302,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T033 — Wire the WXT background entrypoint
 
-- [ ] Register runtime-message and alarm listeners once inside `defineBackground`.
-- [ ] Dispatch validated messages to rotation, refresh, settings, tab-list, and snapshot handlers.
-- [ ] Trigger conservative recovery without making the WXT entrypoint `main` function async.
-- [ ] Handle `runtime.onStartup`/`onInstalled` only where needed and without duplicate work.
-- [ ] Convert uncaught command errors to typed responses and safe persisted attention state.
+- [x] Register runtime-message and alarm listeners once inside `defineBackground`.
+- [x] Dispatch validated messages to rotation, refresh, settings, tab-list, and snapshot handlers.
+- [x] Trigger conservative recovery without making the WXT entrypoint `main` function async.
+- [x] Handle `runtime.onStartup`/`onInstalled` only where needed and without duplicate work.
+- [x] Convert uncaught command errors to typed responses and safe persisted attention state.
 
 **Requirements:** FR-043, FR-050  
 **Depends on:** T023–T032  
