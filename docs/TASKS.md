@@ -261,12 +261,12 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T030 — Implement rotation lifecycle service
 
-- [ ] Validate start input and capture the current target descriptors/order.
-- [ ] Confirm replacement intent when another rotation is active through a specific command flag.
-- [ ] Implement start, pause, resume, stop, and due-tick handlers.
-- [ ] Reconcile before every tick, activate exactly one target, persist the new cursor/timestamps, and schedule the next tick.
-- [ ] Make repeated control commands idempotent.
-- [ ] Stop and report when fewer than two eligible targets remain.
+- [x] Validate start input and capture the current target descriptors/order.
+- [x] Confirm replacement intent when another rotation is active through a specific command flag.
+- [x] Implement start, pause, resume, stop, and due-tick handlers.
+- [x] Reconcile before every tick, activate exactly one target, persist the new cursor/timestamps, and schedule the next tick.
+- [x] Make repeated control commands idempotent.
+- [x] Stop and report when fewer than two eligible targets remain.
 
 **Requirements:** FR-010–013, FR-030, FR-031, FR-041–043  
 **Depends on:** T014, T020–T025  
