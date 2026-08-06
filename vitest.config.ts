@@ -27,7 +27,7 @@ export default defineConfig({
       provider: 'v8',
       reportsDirectory: './coverage',
       reporter: ['text', 'html', 'lcov'],
-      include: ['src/core/**/*.ts', 'src/storage/**/*.ts'],
+      include: ['src/core/**/*.ts', 'src/storage/**/*.ts', 'src/messaging/**/*.ts'],
     },
   },
 });

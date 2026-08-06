@@ -217,12 +217,12 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T023 — Implement typed messaging protocol and validation
 
-- [ ] Define discriminated command types for snapshot, tab list, start/pause/resume/stop rotation, start/stop refresh, refresh-now, and settings updates.
-- [ ] Define typed success and error responses.
-- [ ] Add runtime guards for untrusted message values.
-- [ ] Use a cross-browser-safe async response pattern (`sendResponse` plus the required listener return value) rather than relying on promise-return behavior that differs between runtimes and test doubles.
-- [ ] Reject unknown messages with no side effects.
-- [ ] Test all valid command shapes and representative malformed messages.
+- [x] Define discriminated command types for snapshot, tab list, start/pause/resume/stop rotation, start/stop refresh, refresh-now, and settings updates.
+- [x] Define typed success and error responses.
+- [x] Add runtime guards for untrusted message values.
+- [x] Use a cross-browser-safe async response pattern (`sendResponse` plus the required listener return value) rather than relying on promise-return behavior that differs between runtimes and test doubles.
+- [x] Reject unknown messages with no side effects.
+- [x] Test all valid command shapes and representative malformed messages.
 
 **Requirements:** FR-050  
 **Depends on:** T010  
