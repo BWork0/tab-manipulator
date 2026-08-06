@@ -204,7 +204,8 @@ main {
   font-weight: 700;
 }
 
-.last-result {
+.last-result,
+.action-result {
   margin: 0.75rem 0 0;
   padding: 0.625rem 0.7rem;
   border-radius: 0.5rem;
@@ -214,7 +215,8 @@ main {
   font-weight: 650;
 }
 
-.last-result[data-tone='attention'] {
+.last-result[data-tone='attention'],
+.action-result[data-tone='attention'] {
   color: var(--attention);
   background: var(--attention-surface);
 }

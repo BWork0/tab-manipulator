@@ -369,16 +369,21 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T043 — Build refresh controls
 
-- [ ] Add 30-second, 1-minute, 5-minute, and custom interval controls.
-- [ ] Validate at least one selected eligible target and a 30-second minimum.
-- [ ] Implement start, replacement confirmation, stop, and refresh-now commands.
-- [ ] Show aggregate success/skipped/failed results.
-- [ ] Refresh the snapshot and announce the result after every command.
+- [x] Add 30-second, 1-minute, 5-minute, and custom interval controls.
+- [x] Validate at least one selected eligible target and a 30-second minimum.
+- [x] Implement start, replacement confirmation, stop, and refresh-now commands.
+- [x] Show aggregate success/skipped/failed results.
+- [x] Refresh the snapshot and announce the result after every command.
 
 **Requirements:** FR-020–022; sections 8.2–8.3  
 **Depends on:** T041  
 **Likely files:** `src/entrypoints/popup/main.ts`, `src/entrypoints/popup/style.css`, optional `src/ui/refresh-controls.ts`  
 **Acceptance:** Refresh-now does not alter an active schedule and partial results are understandable without inspecting developer tools.
+
+**Verification evidence (2026-08-06):**
+
+- Eight focused refresh-control tests passed persisted preset/custom rendering, minimum and target validation, start/replacement/stop commands, refresh-now schedule independence, visible and announced partial counts, typed failure recovery, and double-submit suppression.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 243 automated tests, and Chromium/Firefox MV3 production builds.
 
 ### T044 — Add advanced-settings navigation and final popup polish
 

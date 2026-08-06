@@ -4,6 +4,9 @@ import type {
   CommandResponse,
   GetSnapshotCommand,
   GetTabListCommand,
+  RefreshNowCommand,
+  StartRefreshCommand,
+  StopRefreshCommand,
 } from '@/messaging/protocol';
 import { browser } from 'wxt/browser';
 import './style.css';
@@ -19,6 +22,13 @@ import {
   type RotationControlCommand,
   type RotationControlElements,
 } from './rotation-controls';
+import {
+  createRefreshControlsController,
+  type RefreshCommandRequestResult,
+  type RefreshControlCommand,
+  type RefreshControlElements,
+  type RefreshControlsController,
+} from './refresh-controls';
 
 interface PopupElements {
   statusRegion: HTMLElement;
@@ -97,6 +107,25 @@ function getRotationControlElements(): RotationControlElements {
     confirmation: requiredElement('rotation-replacement-confirmation'),
     confirmReplaceButton: requiredElement<HTMLButtonElement>('rotation-confirm-replace-button'),
     cancelReplaceButton: requiredElement<HTMLButtonElement>('rotation-cancel-replace-button'),
+  };
+}
+
+function getRefreshControlElements(): RefreshControlElements {
+  return {
+    region: requiredElement('refresh-region'),
+    settingsFieldset: requiredElement<HTMLFieldSetElement>('refresh-settings'),
+    interval: requiredElement<HTMLSelectElement>('refresh-interval'),
+    customIntervalGroup: requiredElement('refresh-custom-interval-group'),
+    customInterval: requiredElement<HTMLInputElement>('refresh-custom-interval'),
+    validation: requiredElement('refresh-validation'),
+    result: requiredElement('refresh-result'),
+    startButton: requiredElement<HTMLButtonElement>('refresh-start-button'),
+    replaceButton: requiredElement<HTMLButtonElement>('refresh-replace-button'),
+    stopButton: requiredElement<HTMLButtonElement>('refresh-stop-button'),
+    refreshNowButton: requiredElement<HTMLButtonElement>('refresh-now-button'),
+    confirmation: requiredElement('refresh-replacement-confirmation'),
+    confirmReplaceButton: requiredElement<HTMLButtonElement>('refresh-confirm-replace-button'),
+    cancelReplaceButton: requiredElement<HTMLButtonElement>('refresh-cancel-replace-button'),
   };
 }
 
@@ -233,8 +262,42 @@ async function sendRotationCommand(
   }
 }
 
+async function sendRefreshCommand(
+  command: RefreshControlCommand,
+): Promise<RefreshCommandRequestResult> {
+  try {
+    const rawResponse = await browser.runtime.sendMessage(command);
+
+    if (command.type === 'refresh-now') {
+      const response = rawResponse as CommandResponse<RefreshNowCommand> | undefined;
+
+      if (response?.command !== command.type) {
+        return { ok: false, code: 'unexpected-error' };
+      }
+
+      return response.ok
+        ? { ok: true, snapshot: response.data.snapshot, result: response.data.result }
+        : { ok: false, code: response.error.code };
+    }
+
+    const response = rawResponse as
+      CommandResponse<StartRefreshCommand | StopRefreshCommand> | undefined;
+
+    if (response?.command !== command.type) {
+      return { ok: false, code: 'unexpected-error' };
+    }
+
+    return response.ok
+      ? { ok: true, snapshot: response.data }
+      : { ok: false, code: response.error.code };
+  } catch {
+    return { ok: false, code: 'browser-operation-failed' };
+  }
+}
+
 function main(): void {
   const elements = getElements();
+  let refreshControls: RefreshControlsController | null = null;
   const tabSelection = createTabSelectionController({
     elements: getTabSelectionElements(),
     requestTabList,
@@ -250,6 +313,21 @@ function main(): void {
     applySnapshot(snapshot) {
       renderSnapshot(elements, snapshot);
       rotationControls.setSnapshot(snapshot);
+      refreshControls?.setSnapshot(snapshot);
+    },
+    announce(message) {
+      elements.announcement.textContent = message;
+    },
+  });
+  refreshControls = createRefreshControlsController({
+    elements: getRefreshControlElements(),
+    revalidateSelectedTargets: () => tabSelection.revalidateForCommand(),
+    sendCommand: sendRefreshCommand,
+    refreshSnapshot: () => requestSnapshot(elements),
+    applySnapshot(snapshot) {
+      renderSnapshot(elements, snapshot);
+      rotationControls.setSnapshot(snapshot);
+      refreshControls?.setSnapshot(snapshot);
     },
     announce(message) {
       elements.announcement.textContent = message;
@@ -258,9 +336,16 @@ function main(): void {
 
   elements.retryButton.addEventListener(
     'click',
-    () => void requestSnapshot(elements, (snapshot) => rotationControls.setSnapshot(snapshot)),
+    () =>
+      void requestSnapshot(elements, (snapshot) => {
+        rotationControls.setSnapshot(snapshot);
+        refreshControls?.setSnapshot(snapshot);
+      }),
   );
-  void requestSnapshot(elements, (snapshot) => rotationControls.setSnapshot(snapshot));
+  void requestSnapshot(elements, (snapshot) => {
+    rotationControls.setSnapshot(snapshot);
+    refreshControls?.setSnapshot(snapshot);
+  });
   void tabSelection.load();
 }
 

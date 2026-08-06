@@ -199,6 +199,95 @@
             </div>
           </div>
         </section>
+
+        <section
+          id="refresh-region"
+          class="automation-card"
+          aria-labelledby="refresh-heading"
+          aria-busy="false"
+        >
+          <div class="automation-card__heading">
+            <h2 id="refresh-heading">Refresh</h2>
+            <p>Reload the selected tabs now or on a schedule.</p>
+          </div>
+
+          <fieldset id="refresh-settings" disabled>
+            <legend class="visually-hidden">Refresh settings</legend>
+
+            <label for="refresh-interval">Interval</label>
+            <select id="refresh-interval" aria-describedby="refresh-validation">
+              <option value="30000">30 seconds</option>
+              <option value="60000">1 minute</option>
+              <option value="300000">5 minutes</option>
+              <option value="custom">Custom</option>
+            </select>
+
+            <div id="refresh-custom-interval-group" class="custom-interval" hidden>
+              <label for="refresh-custom-interval">Custom interval in seconds</label>
+              <input
+                id="refresh-custom-interval"
+                type="number"
+                min="30"
+                step="1"
+                inputmode="numeric"
+                value="300"
+                aria-describedby="refresh-validation"
+              />
+            </div>
+          </fieldset>
+
+          <p
+            id="refresh-validation"
+            class="form-validation"
+            aria-live="polite"
+            aria-atomic="true"
+            hidden
+          ></p>
+          <p
+            id="refresh-result"
+            class="action-result"
+            data-tone="neutral"
+            role="status"
+            aria-atomic="true"
+            hidden
+          ></p>
+
+          <div class="automation-actions">
+            <button id="refresh-start-button" type="button" disabled>Start refresh</button>
+            <button id="refresh-replace-button" class="button--quiet" type="button" disabled hidden>
+              Replace refresh&hellip;
+            </button>
+            <button id="refresh-stop-button" class="button--danger" type="button" disabled hidden>
+              Stop refresh
+            </button>
+            <button id="refresh-now-button" class="button--quiet" type="button" disabled>
+              Refresh now
+            </button>
+          </div>
+
+          <div
+            id="refresh-replacement-confirmation"
+            class="confirmation"
+            role="region"
+            aria-label="Replace refresh confirmation"
+            hidden
+          >
+            <p>Replace the current refresh schedule with the selected tabs and interval?</p>
+            <div class="confirmation__actions">
+              <button id="refresh-confirm-replace-button" type="button" disabled>
+                Replace and start
+              </button>
+              <button
+                id="refresh-cancel-replace-button"
+                class="button--quiet"
+                type="button"
+                disabled
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
 
       <p id="status-announcement" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
