@@ -317,11 +317,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T040 — Build the accessible popup shell and status region
 
-- [ ] Replace starter HTML/CSS with a compact extension popup layout.
-- [ ] Add semantic headings/regions, visible focus styles, and a polite live region.
-- [ ] Render all status variants and the next due action from a background snapshot.
-- [ ] Add loading, empty, unsupported, and command-error states.
-- [ ] Make the layout usable at 200% zoom and in light/dark browser themes.
+- [x] Replace starter HTML/CSS with a compact extension popup layout.
+- [x] Add semantic headings/regions, visible focus styles, and a polite live region.
+- [x] Render all status variants and the next due action from a background snapshot.
+- [x] Add loading, empty, unsupported, and command-error states.
+- [x] Make the layout usable at 200% zoom and in light/dark browser themes.
 
 **Requirements:** Sections 8.1, 8.3, 13 accessibility; FR-051  
 **Depends on:** T003, T023, T032, T033  

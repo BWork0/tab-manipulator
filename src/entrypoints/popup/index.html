@@ -7,10 +7,69 @@
     <meta name="manifest.type" content="browser_action" />
   </head>
   <body>
-    <main id="app">
-      <h1>Tab Manipulator</h1>
-      <p>Automation controls are coming soon.</p>
-    </main>
+    <div class="popup-shell">
+      <header class="popup-header">
+        <p class="eyebrow">Tab automation</p>
+        <h1>Tab Manipulator</h1>
+      </header>
+
+      <main>
+        <section
+          id="status-region"
+          class="status-card"
+          aria-labelledby="status-heading"
+          aria-describedby="status-description"
+          aria-busy="true"
+        >
+          <div class="status-card__heading">
+            <h2 id="status-heading">Status</h2>
+            <p id="status-indicator" class="status-indicator" data-tone="neutral">
+              <span class="status-indicator__dot" aria-hidden="true"></span>
+              <span id="status-label">Loading</span>
+            </p>
+          </div>
+
+          <p id="status-description" class="status-description">Checking your automation state…</p>
+
+          <dl id="next-action" class="status-details" hidden>
+            <div>
+              <dt>Next action</dt>
+              <dd>
+                <span id="next-action-label"></span>
+                <span aria-hidden="true"> · </span>
+                <time id="next-action-time"></time>
+              </dd>
+            </div>
+          </dl>
+
+          <p id="last-result" class="last-result" data-tone="neutral" hidden></p>
+        </section>
+
+        <section id="unsupported-state" class="notice" aria-labelledby="unsupported-heading" hidden>
+          <h2 id="unsupported-heading">Limited browser support</h2>
+          <p id="unsupported-description"></p>
+        </section>
+
+        <section
+          id="command-error"
+          class="notice notice--error"
+          aria-labelledby="error-heading"
+          hidden
+        >
+          <h2 id="error-heading">Status unavailable</h2>
+          <p id="error-description"></p>
+          <button id="retry-button" type="button">Try again</button>
+        </section>
+
+        <section class="workspace-card" aria-labelledby="workspace-heading">
+          <h2 id="workspace-heading">Automation</h2>
+          <p id="workspace-description">No automation controls are active in this popup yet.</p>
+        </section>
+      </main>
+
+      <p id="status-announcement" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
+    </div>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>
