@@ -1,6 +1,7 @@
 import type { TabIneligibilityReason } from '@/core/tab-eligibility';
 import type { DomainErrorCode } from '@/core/types';
 import type { TabListItem } from '@/messaging/protocol';
+import { createPopupOperationGate, type PopupOperationGate } from './operation-gate';
 import { commandErrorMessage } from './status-view';
 
 export interface TabSelectionElements {
@@ -31,6 +32,7 @@ export interface TabSelectionControllerOptions {
   requestTabList(): Promise<TabListRequestResult>;
   announce?(message: string): void;
   scheduleFaviconLoad?(callback: () => void): void;
+  operationGate?: PopupOperationGate;
 }
 
 const INELIGIBILITY_MESSAGES: Readonly<Record<TabIneligibilityReason, string>> = {
@@ -240,12 +242,31 @@ export function createTabSelectionController({
   requestTabList,
   announce = () => undefined,
   scheduleFaviconLoad = defaultScheduleFaviconLoad,
+  operationGate = createPopupOperationGate(),
 }: TabSelectionControllerOptions): TabSelectionController {
   let tabs: readonly TabListItem[] = [];
   let selectedKeys = new Set<string>();
 
   function render(): void {
     renderTabList(elements, tabs, selectedKeys, scheduleFaviconLoad);
+    syncOperationState();
+  }
+
+  function syncOperationState(): void {
+    const unavailable = !elements.errorState.hidden;
+    const pending = operationGate.isPending();
+    const eligibleCount = eligibleTabs(tabs).length;
+    elements.selectAllButton.disabled =
+      unavailable || pending || eligibleCount === 0 || selectedKeys.size === eligibleCount;
+    elements.clearButton.disabled = unavailable || pending || selectedKeys.size === 0;
+    elements.refreshButton.disabled = pending;
+
+    for (const checkbox of elements.list.querySelectorAll<HTMLInputElement>(
+      'input[type="checkbox"]',
+    )) {
+      const tab = tabs.find((candidate) => candidate.key === checkbox.dataset.tabKey);
+      checkbox.disabled = unavailable || pending || tab?.eligibility.eligible !== true;
+    }
   }
 
   function renderLoading(): void {
@@ -263,27 +284,45 @@ export function createTabSelectionController({
     elements.errorDescription.textContent = message;
     elements.errorState.hidden = false;
     elements.refreshButton.disabled = false;
+    syncOperationState();
     announce(`Tabs unavailable. ${message}`);
   }
 
-  async function load(shouldAnnounce = false): Promise<boolean> {
-    renderLoading();
-    const result = await requestTabList();
+  async function load(shouldAnnounce = false, acquireOperation = false): Promise<boolean> {
+    const release = acquireOperation ? operationGate.tryAcquire() : undefined;
 
-    if (!result.ok) {
-      renderError(result.code);
+    if (release === null) {
       return false;
     }
 
-    tabs = [...result.tabs].sort((left, right) => left.index - right.index);
-    selectedKeys = revalidateSelectedKeys(selectedKeys, tabs);
-    render();
+    renderLoading();
+    let succeeded = false;
 
-    if (shouldAnnounce) {
-      announce(`Tab list updated. ${elements.selectionSummary.textContent}.`);
+    try {
+      const result = await requestTabList();
+
+      if (!result.ok) {
+        renderError(result.code);
+        return false;
+      }
+
+      tabs = [...result.tabs].sort((left, right) => left.index - right.index);
+      selectedKeys = revalidateSelectedKeys(selectedKeys, tabs);
+      render();
+      succeeded = true;
+
+      if (shouldAnnounce) {
+        announce(`Tab list updated. ${elements.selectionSummary.textContent}.`);
+      }
+
+      return true;
+    } finally {
+      release?.();
+
+      if (shouldAnnounce && !succeeded) {
+        elements.refreshButton.focus();
+      }
     }
-
-    return true;
   }
 
   elements.list.addEventListener('change', (event) => {
@@ -323,7 +362,9 @@ export function createTabSelectionController({
     announce('Tab selection cleared.');
   });
 
-  elements.refreshButton.addEventListener('click', () => void load(true));
+  elements.refreshButton.addEventListener('click', () => void load(true, true));
+
+  operationGate.subscribe(syncOperationState);
 
   return {
     load: () => load(false),

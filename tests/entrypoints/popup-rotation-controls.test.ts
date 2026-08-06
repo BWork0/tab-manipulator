@@ -5,6 +5,7 @@ import {
   type RotationControlElements,
   type RotationControlsOptions,
 } from '@/entrypoints/popup/rotation-controls';
+import { createPopupOperationGate } from '@/entrypoints/popup/operation-gate';
 import type { AutomationSnapshot } from '@/messaging/protocol';
 import { parseHTML } from 'linkedom';
 import { describe, expect, it, vi } from 'vitest';
@@ -242,12 +243,14 @@ describe('popup rotation controls', () => {
     await vi.waitFor(() =>
       expect(harness.sendCommand).toHaveBeenLastCalledWith({ type: 'pause-rotation' }),
     );
+    await vi.waitFor(() => expect(harness.elements.primaryButton.disabled).toBe(false));
 
     harness.controller.setSnapshot(snapshot(rotation('paused')));
     harness.elements.primaryButton.click();
     await vi.waitFor(() =>
       expect(harness.sendCommand).toHaveBeenLastCalledWith({ type: 'resume-rotation' }),
     );
+    await vi.waitFor(() => expect(harness.elements.primaryButton.disabled).toBe(false));
 
     harness.controller.setSnapshot(snapshot(rotation('running')));
     harness.elements.stopButton.click();
@@ -259,11 +262,20 @@ describe('popup rotation controls', () => {
 
   it('requires inline confirmation before replacing a rotation', async () => {
     const harness = createHarness();
+    const confirmationFocus = vi.spyOn(harness.elements.confirmReplaceButton, 'focus');
+    const restoredFocus = vi.spyOn(harness.elements.replaceButton, 'focus');
     harness.controller.setSnapshot(snapshot(rotation('running')));
     harness.elements.replaceButton.click();
 
     expect(harness.elements.confirmation.hidden).toBe(false);
     expect(harness.sendCommand).not.toHaveBeenCalled();
+    expect(confirmationFocus).toHaveBeenCalledOnce();
+
+    harness.elements.cancelReplaceButton.click();
+    expect(harness.elements.confirmation.hidden).toBe(true);
+    expect(restoredFocus).toHaveBeenCalledOnce();
+
+    harness.elements.replaceButton.click();
 
     harness.elements.confirmReplaceButton.click();
     await vi.waitFor(() => expect(harness.sendCommand).toHaveBeenCalledOnce());
@@ -292,9 +304,28 @@ describe('popup rotation controls', () => {
     expect(harness.sendCommand).toHaveBeenCalledTimes(1);
   });
 
+  it('disables every rotation command control while another popup operation is pending', () => {
+    const operationGate = createPopupOperationGate();
+    const harness = createHarness({ operationGate });
+    harness.controller.setSnapshot(snapshot(rotation('running')));
+
+    const release = operationGate.tryAcquire();
+
+    expect(harness.elements.region.getAttribute('aria-busy')).toBe('true');
+    expect(harness.elements.settingsFieldset.disabled).toBe(true);
+    expect(harness.elements.primaryButton.disabled).toBe(true);
+    expect(harness.elements.replaceButton.disabled).toBe(true);
+    expect(harness.elements.stopButton.disabled).toBe(true);
+
+    release?.();
+    expect(harness.elements.region.getAttribute('aria-busy')).toBe('false');
+    expect(harness.elements.primaryButton.disabled).toBe(false);
+  });
+
   it('refreshes persisted state and announces typed command failures', async () => {
     const active = snapshot(rotation('running'));
     const harness = createHarness();
+    const confirmationFocus = vi.spyOn(harness.elements.confirmReplaceButton, 'focus');
     harness.sendCommand.mockResolvedValueOnce({
       ok: false,
       code: 'replacement-confirmation-required',
@@ -310,5 +341,6 @@ describe('popup rotation controls', () => {
     expect(harness.announce).toHaveBeenLastCalledWith(
       expect.stringContaining('Rotation command failed'),
     );
+    expect(confirmationFocus).toHaveBeenCalledOnce();
   });
 });

@@ -103,6 +103,36 @@
         </section>
 
         <section
+          id="advanced-settings-region"
+          class="settings-card"
+          aria-labelledby="active-settings-heading"
+          aria-busy="false"
+        >
+          <div class="active-settings" aria-labelledby="active-settings-heading">
+            <div>
+              <h2 id="active-settings-heading">Active tab rules</h2>
+              <p id="active-settings-summary">Loading pinned and filter settings&hellip;</p>
+            </div>
+            <button
+              id="advanced-settings-button"
+              class="button--quiet button--compact"
+              type="button"
+              aria-describedby="active-settings-summary advanced-settings-error"
+              disabled
+            >
+              Advanced settings
+            </button>
+          </div>
+          <p
+            id="advanced-settings-error"
+            class="form-validation"
+            role="status"
+            aria-atomic="true"
+            hidden
+          ></p>
+        </section>
+
+        <section
           id="rotation-region"
           class="automation-card"
           aria-labelledby="rotation-heading"

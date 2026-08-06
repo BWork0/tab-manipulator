@@ -387,16 +387,22 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T044 — Add advanced-settings navigation and final popup polish
 
-- [ ] Open the WXT options page through the browser adapter.
-- [ ] Show the active pinned/filter summary near automation controls.
-- [ ] Ensure command controls disable while an operation is pending.
-- [ ] Prevent double submission and restore focus after confirmation/error states.
-- [ ] Remove any remaining starter assets that are no longer used.
+- [x] Open the WXT options page through the browser adapter.
+- [x] Show the active pinned/filter summary near automation controls.
+- [x] Ensure command controls disable while an operation is pending.
+- [x] Prevent double submission and restore focus after confirmation/error states.
+- [x] Remove any remaining starter assets that are no longer used.
 
 **Requirements:** Section 8.1; FR-050  
 **Depends on:** T042, T043  
 **Likely files:** `src/entrypoints/popup/*`, `src/assets/*`, `public/wxt.svg`  
 **Acceptance:** Popup has no dead links, starter branding, duplicated actions, or focus traps.
+
+**Verification evidence (2026-08-06):**
+
+- Thirty-eight focused popup tests passed options-page adapter navigation, active pinned/filter summaries, shared pending-state control disabling, duplicate-submission suppression, and focus restoration after confirmations and errors.
+- Source and generated Chromium/Firefox popup output contain no starter logo/counter assets or dead source links; only the product icon set remains.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 250 automated tests, and Chromium/Firefox MV3 production builds.
 
 ## Phase 5: Options experience
 

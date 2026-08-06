@@ -7,6 +7,7 @@ import type {
   StartRotationCommand,
   StopRotationCommand,
 } from '@/messaging/protocol';
+import { createPopupOperationGate, type PopupOperationGate } from './operation-gate';
 import { commandErrorMessage } from './status-view';
 
 export type RotationControlCommand =
@@ -43,6 +44,7 @@ export interface RotationControlsOptions {
   refreshSnapshot(): Promise<AutomationSnapshot | null>;
   applySnapshot(snapshot: AutomationSnapshot): void;
   announce(message: string): void;
+  operationGate?: PopupOperationGate;
 }
 
 const ROTATION_PRESETS = new Set([10_000, 30_000, 60_000]);
@@ -110,9 +112,9 @@ export function createRotationControlsController({
   refreshSnapshot,
   applySnapshot,
   announce,
+  operationGate = createPopupOperationGate(),
 }: RotationControlsOptions): RotationControlsController {
   let snapshot: AutomationSnapshot | null = null;
-  let pending = false;
 
   function hideConfirmation(): void {
     elements.confirmation.hidden = true;
@@ -127,6 +129,7 @@ export function createRotationControlsController({
   function renderState(): void {
     const session = snapshot?.rotation ?? null;
     const available = snapshot?.capabilities.tabActivation === 'available';
+    const pending = operationGate.isPending();
     const controlsDisabled = pending || !available;
 
     elements.region.setAttribute('aria-busy', String(pending));
@@ -182,14 +185,10 @@ export function createRotationControlsController({
     }
   }
 
-  async function runCommand(command: RotationControlCommand): Promise<void> {
-    if (pending) {
-      return;
-    }
-
-    pending = true;
-    renderState();
-
+  async function performCommand(
+    command: RotationControlCommand,
+    errorFocusTarget: HTMLElement,
+  ): Promise<HTMLElement | null> {
     try {
       const result = await sendCommand(command);
 
@@ -199,7 +198,9 @@ export function createRotationControlsController({
         clearValidation();
         hideConfirmation();
         announce(commandSuccessMessage(command));
-        return;
+        return command.type === 'start-rotation' && command.replaceExisting
+          ? elements.replaceButton
+          : null;
       }
 
       if (result.code === 'replacement-confirmation-required') {
@@ -208,17 +209,38 @@ export function createRotationControlsController({
 
       await refreshAfterError();
       showValidation(`Rotation command failed. ${commandErrorMessage(result.code)}`);
+      return result.code === 'replacement-confirmation-required'
+        ? elements.confirmReplaceButton
+        : errorFocusTarget;
     } catch {
       await refreshAfterError();
       showValidation(`Rotation command failed. ${commandErrorMessage('browser-operation-failed')}`);
+      return errorFocusTarget;
+    }
+  }
+
+  async function runCommand(
+    command: RotationControlCommand,
+    errorFocusTarget: HTMLElement,
+  ): Promise<void> {
+    const release = operationGate.tryAcquire();
+
+    if (release === null) {
+      return;
+    }
+
+    let focusTarget: HTMLElement | null = null;
+
+    try {
+      focusTarget = await performCommand(command, errorFocusTarget);
     } finally {
-      pending = false;
-      renderState();
+      release();
+      focusTarget?.focus();
     }
   }
 
   async function startRotation(replaceExisting: boolean): Promise<void> {
-    if (pending) {
+    if (operationGate.isPending()) {
       return;
     }
 
@@ -227,6 +249,7 @@ export function createRotationControlsController({
 
     if (intervalMs === null) {
       showValidation('Enter a rotation interval of at least 10 seconds.', true);
+      elements.customInterval.focus();
       return;
     }
 
@@ -234,34 +257,50 @@ export function createRotationControlsController({
 
     if (!isDirection(direction)) {
       showValidation('Choose a valid rotation direction.');
+      elements.direction.focus();
       return;
     }
 
-    pending = true;
-    renderState();
-    let targetKeys: readonly string[];
+    const release = operationGate.tryAcquire();
+
+    if (release === null) {
+      return;
+    }
+
+    const errorFocusTarget = replaceExisting
+      ? elements.confirmReplaceButton
+      : elements.primaryButton;
+    let focusTarget: HTMLElement | null = null;
 
     try {
-      targetKeys = await revalidateSelectedTargets();
-    } catch {
-      targetKeys = [];
+      let targetKeys: readonly string[];
+
+      try {
+        targetKeys = await revalidateSelectedTargets();
+      } catch {
+        targetKeys = [];
+      }
+
+      if (targetKeys.length < 2) {
+        showValidation('Select at least two eligible tabs to start rotation.');
+        focusTarget = errorFocusTarget;
+        return;
+      }
+
+      focusTarget = await performCommand(
+        {
+          type: 'start-rotation',
+          targetKeys,
+          intervalMs,
+          direction,
+          replaceExisting,
+        },
+        errorFocusTarget,
+      );
     } finally {
-      pending = false;
-      renderState();
+      release();
+      focusTarget?.focus();
     }
-
-    if (targetKeys.length < 2) {
-      showValidation('Select at least two eligible tabs to start rotation.');
-      return;
-    }
-
-    await runCommand({
-      type: 'start-rotation',
-      targetKeys,
-      intervalMs,
-      direction,
-      replaceExisting,
-    });
   }
 
   elements.interval.addEventListener('change', () => {
@@ -283,9 +322,9 @@ export function createRotationControlsController({
     const state = snapshot?.rotation?.state;
 
     if (state === 'running') {
-      void runCommand({ type: 'pause-rotation' });
+      void runCommand({ type: 'pause-rotation' }, elements.primaryButton);
     } else if (state === 'paused') {
-      void runCommand({ type: 'resume-rotation' });
+      void runCommand({ type: 'resume-rotation' }, elements.primaryButton);
     } else if (snapshot?.rotation === null) {
       void startRotation(false);
     }
@@ -294,14 +333,20 @@ export function createRotationControlsController({
     clearValidation();
     elements.confirmation.hidden = false;
     announce('Confirm whether to replace the current rotation.');
+    elements.confirmReplaceButton.focus();
   });
-  elements.stopButton.addEventListener('click', () => void runCommand({ type: 'stop-rotation' }));
+  elements.stopButton.addEventListener(
+    'click',
+    () => void runCommand({ type: 'stop-rotation' }, elements.stopButton),
+  );
   elements.confirmReplaceButton.addEventListener('click', () => void startRotation(true));
   elements.cancelReplaceButton.addEventListener('click', () => {
     hideConfirmation();
     announce('Rotation replacement cancelled.');
+    elements.replaceButton.focus();
   });
 
+  operationGate.subscribe(renderState);
   renderTimingNote();
   renderState();
 

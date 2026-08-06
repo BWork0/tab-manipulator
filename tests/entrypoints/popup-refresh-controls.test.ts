@@ -5,6 +5,7 @@ import {
   type RefreshControlElements,
   type RefreshControlsOptions,
 } from '@/entrypoints/popup/refresh-controls';
+import { createPopupOperationGate } from '@/entrypoints/popup/operation-gate';
 import type { AutomationSnapshot } from '@/messaging/protocol';
 import { parseHTML } from 'linkedom';
 import { describe, expect, it, vi } from 'vitest';
@@ -228,17 +229,27 @@ describe('popup refresh controls', () => {
   it('requires inline confirmation before replacement and supports stopping', async () => {
     const active = snapshot(refreshSchedule());
     const harness = createHarness();
+    const confirmationFocus = vi.spyOn(harness.elements.confirmReplaceButton, 'focus');
+    const restoredFocus = vi.spyOn(harness.elements.replaceButton, 'focus');
     harness.controller.setSnapshot(active);
     harness.elements.replaceButton.click();
 
     expect(harness.elements.confirmation.hidden).toBe(false);
     expect(harness.sendCommand).not.toHaveBeenCalled();
+    expect(confirmationFocus).toHaveBeenCalledOnce();
+
+    harness.elements.cancelReplaceButton.click();
+    expect(harness.elements.confirmation.hidden).toBe(true);
+    expect(restoredFocus).toHaveBeenCalledOnce();
+
+    harness.elements.replaceButton.click();
 
     harness.elements.confirmReplaceButton.click();
     await vi.waitFor(() => expect(harness.sendCommand).toHaveBeenCalledOnce());
     expect(harness.sendCommand).toHaveBeenLastCalledWith(
       expect.objectContaining({ type: 'start-refresh', replaceExisting: true }),
     );
+    await vi.waitFor(() => expect(harness.elements.replaceButton.disabled).toBe(false));
 
     harness.controller.setSnapshot(active);
     harness.elements.stopButton.click();
@@ -319,9 +330,28 @@ describe('popup refresh controls', () => {
     expect(harness.sendCommand).toHaveBeenCalledTimes(1);
   });
 
+  it('disables every refresh command control while another popup operation is pending', () => {
+    const operationGate = createPopupOperationGate();
+    const harness = createHarness({ operationGate });
+    harness.controller.setSnapshot(snapshot(refreshSchedule()));
+
+    const release = operationGate.tryAcquire();
+
+    expect(harness.elements.region.getAttribute('aria-busy')).toBe('true');
+    expect(harness.elements.settingsFieldset.disabled).toBe(true);
+    expect(harness.elements.replaceButton.disabled).toBe(true);
+    expect(harness.elements.stopButton.disabled).toBe(true);
+    expect(harness.elements.refreshNowButton.disabled).toBe(true);
+
+    release?.();
+    expect(harness.elements.region.getAttribute('aria-busy')).toBe('false');
+    expect(harness.elements.refreshNowButton.disabled).toBe(false);
+  });
+
   it('refreshes persisted state and announces typed command failures', async () => {
     const active = snapshot(refreshSchedule());
     const harness = createHarness();
+    const confirmationFocus = vi.spyOn(harness.elements.confirmReplaceButton, 'focus');
     harness.sendCommand.mockResolvedValueOnce({
       ok: false,
       code: 'replacement-confirmation-required',
@@ -338,5 +368,6 @@ describe('popup refresh controls', () => {
     expect(harness.announce).toHaveBeenLastCalledWith(
       expect.stringContaining('Refresh command failed'),
     );
+    expect(confirmationFocus).toHaveBeenCalledOnce();
   });
 });

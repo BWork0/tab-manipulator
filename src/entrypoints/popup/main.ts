@@ -8,8 +8,14 @@ import type {
   StartRefreshCommand,
   StopRefreshCommand,
 } from '@/messaging/protocol';
+import { createBrowserApiAdapter } from '@/platform/browser-api';
 import { browser } from 'wxt/browser';
 import './style.css';
+import {
+  createAdvancedSettingsController,
+  type AdvancedSettingsElements,
+} from './advanced-settings';
+import { createPopupOperationGate } from './operation-gate';
 import { commandErrorMessage, formatNextRun, popupSnapshotModel } from './status-view';
 import {
   createTabSelectionController,
@@ -88,6 +94,15 @@ function getTabSelectionElements(): TabSelectionElements {
     selectAllButton: requiredElement<HTMLButtonElement>('select-all-tabs-button'),
     clearButton: requiredElement<HTMLButtonElement>('clear-tabs-button'),
     refreshButton: requiredElement<HTMLButtonElement>('refresh-tabs-button'),
+  };
+}
+
+function getAdvancedSettingsElements(): AdvancedSettingsElements {
+  return {
+    region: requiredElement('advanced-settings-region'),
+    summary: requiredElement('active-settings-summary'),
+    button: requiredElement<HTMLButtonElement>('advanced-settings-button'),
+    error: requiredElement('advanced-settings-error'),
   };
 }
 
@@ -297,10 +312,21 @@ async function sendRefreshCommand(
 
 function main(): void {
   const elements = getElements();
+  const operationGate = createPopupOperationGate();
+  const browserApi = createBrowserApiAdapter();
   let refreshControls: RefreshControlsController | null = null;
   const tabSelection = createTabSelectionController({
     elements: getTabSelectionElements(),
     requestTabList,
+    announce(message) {
+      elements.announcement.textContent = message;
+    },
+    operationGate,
+  });
+  const advancedSettings = createAdvancedSettingsController({
+    elements: getAdvancedSettingsElements(),
+    browser: browserApi,
+    operationGate,
     announce(message) {
       elements.announcement.textContent = message;
     },
@@ -314,10 +340,12 @@ function main(): void {
       renderSnapshot(elements, snapshot);
       rotationControls.setSnapshot(snapshot);
       refreshControls?.setSnapshot(snapshot);
+      advancedSettings.setSnapshot(snapshot);
     },
     announce(message) {
       elements.announcement.textContent = message;
     },
+    operationGate,
   });
   refreshControls = createRefreshControlsController({
     elements: getRefreshControlElements(),
@@ -328,10 +356,12 @@ function main(): void {
       renderSnapshot(elements, snapshot);
       rotationControls.setSnapshot(snapshot);
       refreshControls?.setSnapshot(snapshot);
+      advancedSettings.setSnapshot(snapshot);
     },
     announce(message) {
       elements.announcement.textContent = message;
     },
+    operationGate,
   });
 
   elements.retryButton.addEventListener(
@@ -340,11 +370,13 @@ function main(): void {
       void requestSnapshot(elements, (snapshot) => {
         rotationControls.setSnapshot(snapshot);
         refreshControls?.setSnapshot(snapshot);
+        advancedSettings.setSnapshot(snapshot);
       }),
   );
   void requestSnapshot(elements, (snapshot) => {
     rotationControls.setSnapshot(snapshot);
     refreshControls?.setSnapshot(snapshot);
+    advancedSettings.setSnapshot(snapshot);
   });
   void tabSelection.load();
 }

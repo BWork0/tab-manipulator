@@ -3,6 +3,7 @@ import {
   renderTabList,
   type TabSelectionElements,
 } from '@/entrypoints/popup/tab-list';
+import { createPopupOperationGate } from '@/entrypoints/popup/operation-gate';
 import type { TabListItem } from '@/messaging/protocol';
 import { parseHTML } from 'linkedom';
 import { describe, expect, it, vi } from 'vitest';
@@ -185,6 +186,39 @@ describe('popup tab selection', () => {
     );
     expect(controller.selectedTargetKeys()).toEqual([]);
     expect(announce).toHaveBeenCalledWith(expect.stringContaining('Tabs unavailable'));
+  });
+
+  it('disables selection controls and suppresses duplicate manual reloads while pending', async () => {
+    const page = createDocument();
+    const document = page.document as unknown as Document;
+    let resolveReload: ((value: { ok: true; tabs: readonly TabListItem[] }) => void) | undefined;
+    const requestTabList = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, tabs: [tab()] })
+      .mockReturnValueOnce(
+        new Promise<{ ok: true; tabs: readonly TabListItem[] }>((resolve) => {
+          resolveReload = resolve;
+        }),
+      );
+    const viewElements = elements(document);
+    const controller = createTabSelectionController({
+      elements: viewElements,
+      requestTabList,
+      operationGate: createPopupOperationGate(),
+    });
+    await controller.load();
+
+    viewElements.refreshButton.click();
+    viewElements.refreshButton.click();
+
+    expect(requestTabList).toHaveBeenCalledTimes(2);
+    expect(viewElements.refreshButton.disabled).toBe(true);
+    expect(viewElements.selectAllButton.disabled).toBe(true);
+    expect(required<HTMLInputElement>(document, 'input[type="checkbox"]').disabled).toBe(true);
+
+    resolveReload?.({ ok: true, tabs: [tab()] });
+    await vi.waitFor(() => expect(viewElements.refreshButton.disabled).toBe(false));
+    expect(requestTabList).toHaveBeenCalledTimes(2);
   });
 
   it('defers favicon URLs until after rows and controls are interactive', () => {

@@ -6,6 +6,7 @@ import type {
   StartRefreshCommand,
   StopRefreshCommand,
 } from '@/messaging/protocol';
+import { createPopupOperationGate, type PopupOperationGate } from './operation-gate';
 import { commandErrorMessage } from './status-view';
 
 export type RefreshControlCommand = StartRefreshCommand | StopRefreshCommand | RefreshNowCommand;
@@ -42,6 +43,7 @@ export interface RefreshControlsOptions {
   refreshSnapshot(): Promise<AutomationSnapshot | null>;
   applySnapshot(snapshot: AutomationSnapshot): void;
   announce(message: string): void;
+  operationGate?: PopupOperationGate;
 }
 
 const REFRESH_PRESETS = new Set([30_000, 60_000, 300_000]);
@@ -107,9 +109,9 @@ export function createRefreshControlsController({
   refreshSnapshot,
   applySnapshot,
   announce,
+  operationGate = createPopupOperationGate(),
 }: RefreshControlsOptions): RefreshControlsController {
   let snapshot: AutomationSnapshot | null = null;
-  let pending = false;
 
   function hideConfirmation(): void {
     elements.confirmation.hidden = true;
@@ -122,6 +124,7 @@ export function createRefreshControlsController({
   function renderState(): void {
     const schedule = snapshot?.refresh ?? null;
     const available = snapshot?.capabilities.tabReload === 'available';
+    const pending = operationGate.isPending();
     const controlsDisabled = pending || !available;
 
     elements.region.setAttribute('aria-busy', String(pending));
@@ -173,14 +176,10 @@ export function createRefreshControlsController({
     }
   }
 
-  async function runCommand(command: RefreshControlCommand): Promise<void> {
-    if (pending) {
-      return;
-    }
-
-    pending = true;
-    renderState();
-
+  async function performCommand(
+    command: RefreshControlCommand,
+    errorFocusTarget: HTMLElement,
+  ): Promise<HTMLElement | null> {
     try {
       const response = await sendCommand(command);
 
@@ -199,7 +198,9 @@ export function createRefreshControlsController({
         } else {
           announce(commandSuccessMessage(command));
         }
-        return;
+        return command.type === 'start-refresh' && command.replaceExisting
+          ? elements.replaceButton
+          : null;
       }
 
       await refreshAfterError();
@@ -209,31 +210,38 @@ export function createRefreshControlsController({
       }
 
       showValidation(`Refresh command failed. ${commandErrorMessage(response.code)}`);
+      return response.code === 'replacement-confirmation-required'
+        ? elements.confirmReplaceButton
+        : errorFocusTarget;
     } catch {
       await refreshAfterError();
       showValidation(`Refresh command failed. ${commandErrorMessage('browser-operation-failed')}`);
-    } finally {
-      pending = false;
-      renderState();
+      return errorFocusTarget;
     }
   }
 
-  async function revalidatedTargetKeys(): Promise<readonly string[]> {
-    pending = true;
-    renderState();
+  async function runCommand(
+    command: RefreshControlCommand,
+    errorFocusTarget: HTMLElement,
+  ): Promise<void> {
+    const release = operationGate.tryAcquire();
+
+    if (release === null) {
+      return;
+    }
+
+    let focusTarget: HTMLElement | null = null;
 
     try {
-      return await revalidateSelectedTargets();
-    } catch {
-      return [];
+      focusTarget = await performCommand(command, errorFocusTarget);
     } finally {
-      pending = false;
-      renderState();
+      release();
+      focusTarget?.focus();
     }
   }
 
   async function startRefresh(replaceExisting: boolean): Promise<void> {
-    if (pending) {
+    if (operationGate.isPending()) {
       return;
     }
 
@@ -242,38 +250,86 @@ export function createRefreshControlsController({
 
     if (intervalMs === null) {
       showValidation('Enter a refresh interval of at least 30 seconds.', true);
+      elements.customInterval.focus();
       return;
     }
 
-    const targetKeys = await revalidatedTargetKeys();
+    const release = operationGate.tryAcquire();
 
-    if (targetKeys.length < 1) {
-      showValidation('Select at least one eligible tab to start refresh.');
+    if (release === null) {
       return;
     }
 
-    await runCommand({
-      type: 'start-refresh',
-      targetKeys,
-      intervalMs,
-      replaceExisting,
-    });
+    const errorFocusTarget = replaceExisting ? elements.confirmReplaceButton : elements.startButton;
+    let focusTarget: HTMLElement | null = null;
+
+    try {
+      let targetKeys: readonly string[];
+
+      try {
+        targetKeys = await revalidateSelectedTargets();
+      } catch {
+        targetKeys = [];
+      }
+
+      if (targetKeys.length < 1) {
+        showValidation('Select at least one eligible tab to start refresh.');
+        focusTarget = errorFocusTarget;
+        return;
+      }
+
+      focusTarget = await performCommand(
+        {
+          type: 'start-refresh',
+          targetKeys,
+          intervalMs,
+          replaceExisting,
+        },
+        errorFocusTarget,
+      );
+    } finally {
+      release();
+      focusTarget?.focus();
+    }
   }
 
   async function refreshNow(): Promise<void> {
-    if (pending) {
+    if (operationGate.isPending()) {
       return;
     }
 
     clearValidation();
-    const targetKeys = await revalidatedTargetKeys();
+    const release = operationGate.tryAcquire();
 
-    if (targetKeys.length < 1) {
-      showValidation('Select at least one eligible tab to refresh now.');
+    if (release === null) {
       return;
     }
 
-    await runCommand({ type: 'refresh-now', targetKeys });
+    let focusTarget: HTMLElement | null = null;
+
+    try {
+      let targetKeys: readonly string[];
+
+      try {
+        targetKeys = await revalidateSelectedTargets();
+      } catch {
+        targetKeys = [];
+      }
+
+      if (targetKeys.length < 1) {
+        showValidation('Select at least one eligible tab to refresh now.');
+        focusTarget = elements.refreshNowButton;
+        return;
+      }
+
+      focusTarget = await performCommand(
+        { type: 'refresh-now', targetKeys },
+        elements.refreshNowButton,
+      );
+    } finally {
+      release();
+      focusTarget?.focus();
+    }
   }
 
   elements.interval.addEventListener('change', () => {
@@ -290,15 +346,21 @@ export function createRefreshControlsController({
     clearValidation();
     elements.confirmation.hidden = false;
     announce('Confirm whether to replace the current refresh schedule.');
+    elements.confirmReplaceButton.focus();
   });
-  elements.stopButton.addEventListener('click', () => void runCommand({ type: 'stop-refresh' }));
+  elements.stopButton.addEventListener(
+    'click',
+    () => void runCommand({ type: 'stop-refresh' }, elements.stopButton),
+  );
   elements.refreshNowButton.addEventListener('click', () => void refreshNow());
   elements.confirmReplaceButton.addEventListener('click', () => void startRefresh(true));
   elements.cancelReplaceButton.addEventListener('click', () => {
     hideConfirmation();
     announce('Refresh replacement cancelled.');
+    elements.replaceButton.focus();
   });
 
+  operationGate.subscribe(renderState);
   renderIntervalControls();
   renderState();
 
