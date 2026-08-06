@@ -122,7 +122,8 @@ main {
 
 .status-card,
 .notice,
-.tab-card {
+.tab-card,
+.automation-card {
   min-width: 0;
   padding: 0.875rem;
   border: 0.0625rem solid var(--border);
@@ -171,7 +172,8 @@ main {
 
 .status-description,
 .notice p,
-.tab-card__heading p {
+.tab-card__heading p,
+.automation-card__heading p {
   margin: 0.625rem 0 0;
   color: var(--muted);
   font-size: 0.875rem;
@@ -240,6 +242,93 @@ main {
 
 .tab-card__heading p {
   margin-top: 0.25rem;
+}
+
+.automation-card__heading p {
+  margin: 0.25rem 0 0;
+}
+
+.automation-card fieldset {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.875rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.automation-card label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.automation-card select,
+.automation-card input {
+  width: 100%;
+  min-height: 2.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  background: var(--surface);
+  font: inherit;
+}
+
+.automation-card select + label,
+.custom-interval,
+.custom-interval + label {
+  margin-top: 0.35rem;
+}
+
+.custom-interval {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.timing-note,
+.form-validation,
+.confirmation p {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+}
+
+.timing-note {
+  color: var(--muted);
+}
+
+.form-validation {
+  color: var(--attention);
+  font-weight: 700;
+}
+
+.automation-actions,
+.confirmation__actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+}
+
+.button--danger {
+  border-color: var(--attention);
+  color: var(--attention);
+  background: var(--surface);
+}
+
+.confirmation {
+  margin-top: 0.875rem;
+  padding: 0.75rem;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.625rem;
+  background: var(--surface-subtle);
+}
+
+.confirmation p,
+.confirmation__actions {
+  margin-top: 0;
+}
+
+.confirmation__actions {
+  margin-top: 0.65rem;
 }
 
 .button--quiet {

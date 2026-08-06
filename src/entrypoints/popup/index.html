@@ -101,6 +101,104 @@
           </div>
           <ul id="tab-list" class="tab-list" aria-label="Tabs in the current window"></ul>
         </section>
+
+        <section
+          id="rotation-region"
+          class="automation-card"
+          aria-labelledby="rotation-heading"
+          aria-busy="false"
+        >
+          <div class="automation-card__heading">
+            <h2 id="rotation-heading">Rotation</h2>
+            <p>Cycle through the selected tabs.</p>
+          </div>
+
+          <fieldset id="rotation-settings" disabled>
+            <legend class="visually-hidden">Rotation settings</legend>
+
+            <label for="rotation-interval">Interval</label>
+            <select
+              id="rotation-interval"
+              aria-describedby="rotation-timing-note rotation-validation"
+            >
+              <option value="10000">10 seconds</option>
+              <option value="30000">30 seconds</option>
+              <option value="60000">1 minute</option>
+              <option value="custom">Custom</option>
+            </select>
+
+            <div id="rotation-custom-interval-group" class="custom-interval" hidden>
+              <label for="rotation-custom-interval">Custom interval in seconds</label>
+              <input
+                id="rotation-custom-interval"
+                type="number"
+                min="10"
+                step="1"
+                inputmode="numeric"
+                value="10"
+                aria-describedby="rotation-validation"
+              />
+            </div>
+
+            <label for="rotation-direction">Direction</label>
+            <select id="rotation-direction">
+              <option value="forward">Forward (left to right)</option>
+              <option value="backward">Backward (right to left)</option>
+              <option value="random">Random</option>
+            </select>
+          </fieldset>
+
+          <p id="rotation-timing-note" class="timing-note">
+            Rotation below 30 seconds is best effort. Browser background suspension can delay ticks;
+            use 30 seconds or longer for reliable timing.
+          </p>
+          <p
+            id="rotation-validation"
+            class="form-validation"
+            aria-live="polite"
+            aria-atomic="true"
+            hidden
+          ></p>
+
+          <div class="automation-actions">
+            <button id="rotation-primary-button" type="button" disabled>Start rotation</button>
+            <button
+              id="rotation-replace-button"
+              class="button--quiet"
+              type="button"
+              disabled
+              hidden
+            >
+              Replace rotation&hellip;
+            </button>
+            <button id="rotation-stop-button" class="button--danger" type="button" disabled hidden>
+              Stop rotation
+            </button>
+          </div>
+
+          <div
+            id="rotation-replacement-confirmation"
+            class="confirmation"
+            role="region"
+            aria-label="Replace rotation confirmation"
+            hidden
+          >
+            <p>Replace the current rotation with the selected tabs and settings?</p>
+            <div class="confirmation__actions">
+              <button id="rotation-confirm-replace-button" type="button" disabled>
+                Replace and start
+              </button>
+              <button
+                id="rotation-cancel-replace-button"
+                class="button--quiet"
+                type="button"
+                disabled
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
 
       <p id="status-announcement" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>

@@ -350,17 +350,22 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T042 — Build rotation controls
 
-- [ ] Add 10-second, 30-second, 1-minute, and custom interval controls.
-- [ ] Add forward, backward, and random direction controls.
-- [ ] Validate at least two selected eligible targets and a 10-second minimum.
-- [ ] Implement start, replacement confirmation, pause, resume, and stop commands.
-- [ ] Explain best-effort timing for sub-30-second rotation.
-- [ ] Refresh the snapshot and announce the result after every command.
+- [x] Add 10-second, 30-second, 1-minute, and custom interval controls.
+- [x] Add forward, backward, and random direction controls.
+- [x] Validate at least two selected eligible targets and a 10-second minimum.
+- [x] Implement start, replacement confirmation, pause, resume, and stop commands.
+- [x] Explain best-effort timing for sub-30-second rotation.
+- [x] Refresh the snapshot and announce the result after every command.
 
 **Requirements:** FR-010–013; sections 8.2–8.3  
 **Depends on:** T041  
 **Likely files:** `src/entrypoints/popup/main.ts`, `src/entrypoints/popup/style.css`, optional `src/ui/rotation-controls.ts`  
 **Acceptance:** Controls always reflect persisted background state and double-click/repeated commands do not create duplicate sessions.
+
+**Verification evidence (2026-08-06):**
+
+- Focused popup tests passed 23 rotation, tab-selection, and status cases, including persisted-state rendering, minimum/target validation, replacement confirmation, lifecycle commands, typed failures, and double-submit suppression.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 235 automated tests, and Chromium/Firefox MV3 production builds.
 
 ### T043 — Build refresh controls
 

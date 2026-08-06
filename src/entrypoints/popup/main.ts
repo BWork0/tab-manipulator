@@ -13,6 +13,12 @@ import {
   type TabListRequestResult,
   type TabSelectionElements,
 } from './tab-list';
+import {
+  createRotationControlsController,
+  type RotationCommandRequestResult,
+  type RotationControlCommand,
+  type RotationControlElements,
+} from './rotation-controls';
 
 interface PopupElements {
   statusRegion: HTMLElement;
@@ -72,6 +78,25 @@ function getTabSelectionElements(): TabSelectionElements {
     selectAllButton: requiredElement<HTMLButtonElement>('select-all-tabs-button'),
     clearButton: requiredElement<HTMLButtonElement>('clear-tabs-button'),
     refreshButton: requiredElement<HTMLButtonElement>('refresh-tabs-button'),
+  };
+}
+
+function getRotationControlElements(): RotationControlElements {
+  return {
+    region: requiredElement('rotation-region'),
+    settingsFieldset: requiredElement<HTMLFieldSetElement>('rotation-settings'),
+    interval: requiredElement<HTMLSelectElement>('rotation-interval'),
+    customIntervalGroup: requiredElement('rotation-custom-interval-group'),
+    customInterval: requiredElement<HTMLInputElement>('rotation-custom-interval'),
+    direction: requiredElement<HTMLSelectElement>('rotation-direction'),
+    bestEffortNote: requiredElement('rotation-timing-note'),
+    validation: requiredElement('rotation-validation'),
+    primaryButton: requiredElement<HTMLButtonElement>('rotation-primary-button'),
+    replaceButton: requiredElement<HTMLButtonElement>('rotation-replace-button'),
+    stopButton: requiredElement<HTMLButtonElement>('rotation-stop-button'),
+    confirmation: requiredElement('rotation-replacement-confirmation'),
+    confirmReplaceButton: requiredElement<HTMLButtonElement>('rotation-confirm-replace-button'),
+    cancelReplaceButton: requiredElement<HTMLButtonElement>('rotation-cancel-replace-button'),
   };
 }
 
@@ -140,7 +165,10 @@ function renderCommandError(elements: PopupElements, code: DomainErrorCode): voi
   elements.announcement.textContent = `Status unavailable. ${message}`;
 }
 
-async function requestSnapshot(elements: PopupElements): Promise<void> {
+async function requestSnapshot(
+  elements: PopupElements,
+  applySnapshot?: (snapshot: AutomationSnapshot) => void,
+): Promise<AutomationSnapshot | null> {
   renderLoading(elements);
   const command = { type: 'get-snapshot' } satisfies GetSnapshotCommand;
 
@@ -150,16 +178,20 @@ async function requestSnapshot(elements: PopupElements): Promise<void> {
 
     if (response?.command !== command.type) {
       renderCommandError(elements, 'unexpected-error');
-      return;
+      return null;
     }
 
     if (response.ok) {
       renderSnapshot(elements, response.data);
+      applySnapshot?.(response.data);
+      return response.data;
     } else {
       renderCommandError(elements, response.error.code);
+      return null;
     }
   } catch {
     renderCommandError(elements, 'browser-operation-failed');
+    return null;
   }
 }
 
@@ -182,6 +214,25 @@ async function requestTabList(): Promise<TabListRequestResult> {
   }
 }
 
+async function sendRotationCommand(
+  command: RotationControlCommand,
+): Promise<RotationCommandRequestResult> {
+  try {
+    const response = (await browser.runtime.sendMessage(command)) as
+      CommandResponse<RotationControlCommand> | undefined;
+
+    if (response?.command !== command.type) {
+      return { ok: false, code: 'unexpected-error' };
+    }
+
+    return response.ok
+      ? { ok: true, snapshot: response.data }
+      : { ok: false, code: response.error.code };
+  } catch {
+    return { ok: false, code: 'browser-operation-failed' };
+  }
+}
+
 function main(): void {
   const elements = getElements();
   const tabSelection = createTabSelectionController({
@@ -191,9 +242,25 @@ function main(): void {
       elements.announcement.textContent = message;
     },
   });
+  const rotationControls = createRotationControlsController({
+    elements: getRotationControlElements(),
+    revalidateSelectedTargets: () => tabSelection.revalidateForCommand(),
+    sendCommand: sendRotationCommand,
+    refreshSnapshot: () => requestSnapshot(elements),
+    applySnapshot(snapshot) {
+      renderSnapshot(elements, snapshot);
+      rotationControls.setSnapshot(snapshot);
+    },
+    announce(message) {
+      elements.announcement.textContent = message;
+    },
+  });
 
-  elements.retryButton.addEventListener('click', () => void requestSnapshot(elements));
-  void requestSnapshot(elements);
+  elements.retryButton.addEventListener(
+    'click',
+    () => void requestSnapshot(elements, (snapshot) => rotationControls.setSnapshot(snapshot)),
+  );
+  void requestSnapshot(elements, (snapshot) => rotationControls.setSnapshot(snapshot));
   void tabSelection.load();
 }
 
