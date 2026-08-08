@@ -40,7 +40,7 @@
             </div>
 
             <fieldset id="automation-defaults" class="settings-fields" disabled>
-              <legend>Defaults and pinned tabs</legend>
+              <legend>Automation settings</legend>
 
               <div class="field-group">
                 <label for="default-rotation-interval">Default rotation interval</label>
@@ -128,6 +128,81 @@
                   Pinned tabs are excluded by default. A change applies when each active schedule
                   next runs.
                 </p>
+              </div>
+
+              <div class="rules-editor field-group--wide" aria-labelledby="url-filters-heading">
+                <div class="rules-heading">
+                  <h3 id="url-filters-heading">URL filters</h3>
+                  <p>
+                    Add one domain or wildcard URL pattern per line. An empty allowlist allows every
+                    otherwise eligible URL. A matching blocklist rule always wins.
+                  </p>
+                </div>
+
+                <div class="rule-fields">
+                  <div class="field-group">
+                    <label for="allowlist-rules">Allowlist</label>
+                    <textarea
+                      id="allowlist-rules"
+                      rows="6"
+                      spellcheck="false"
+                      aria-describedby="allowlist-help allowlist-validation"
+                    ></textarea>
+                    <p id="allowlist-help" class="field-help">
+                      Examples: <code>example.com</code> or <code>https://*.example.com/*</code>.
+                      Leave empty to allow all eligible URLs.
+                    </p>
+                    <ul
+                      id="allowlist-validation"
+                      class="validation-message validation-list"
+                      role="alert"
+                      hidden
+                    ></ul>
+                  </div>
+
+                  <div class="field-group">
+                    <label for="blocklist-rules">Blocklist</label>
+                    <textarea
+                      id="blocklist-rules"
+                      rows="6"
+                      spellcheck="false"
+                      aria-describedby="blocklist-help blocklist-validation"
+                    ></textarea>
+                    <p id="blocklist-help" class="field-help">
+                      Examples: <code>private.example.com</code> or
+                      <code>*://*.example.com/admin/*</code>. Blocklist matches override allowlist
+                      matches.
+                    </p>
+                    <ul
+                      id="blocklist-validation"
+                      class="validation-message validation-list"
+                      role="alert"
+                      hidden
+                    ></ul>
+                  </div>
+                </div>
+
+                <div class="field-group rule-preview">
+                  <label for="rule-preview-url">Preview a URL</label>
+                  <input
+                    id="rule-preview-url"
+                    type="url"
+                    inputmode="url"
+                    placeholder="https://app.example.com/dashboard"
+                    aria-describedby="rule-preview-help rule-preview-result"
+                  />
+                  <p id="rule-preview-help" class="field-help">
+                    Checks the current draft filters using the same matcher as background actions.
+                  </p>
+                  <output
+                    id="rule-preview-result"
+                    class="rule-preview-result"
+                    for="rule-preview-url allowlist-rules blocklist-rules"
+                    aria-live="polite"
+                  >
+                    Enter an HTTP or HTTPS URL to preview the current filters.
+                  </output>
+                </div>
               </div>
             </fieldset>
 

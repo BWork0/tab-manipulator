@@ -1,5 +1,13 @@
 import type { Settings } from '@/core/types';
 import {
+  evaluateUrlRules,
+  parseRuleConfiguration,
+  type RuleConfiguration,
+  type RuleConfigurationError,
+  type RuleDecision,
+  type RuleValidationErrorCode,
+} from '@/core/rule-engine';
+import {
   intervalSecondsToMs,
   isRotationDirection,
   validateRefreshIntervalMs,
@@ -20,6 +28,12 @@ export interface OptionsSettingsEditorElements {
   refreshCustom: HTMLInputElement;
   refreshValidation: HTMLElement;
   includePinned: HTMLInputElement;
+  allowlist: HTMLTextAreaElement;
+  allowlistValidation: HTMLElement;
+  blocklist: HTMLTextAreaElement;
+  blocklistValidation: HTMLElement;
+  previewUrl: HTMLInputElement;
+  previewResult: HTMLElement;
   settingsSummary: HTMLElement;
   allowlistSummary: HTMLElement;
   blocklistSummary: HTMLElement;
@@ -27,6 +41,13 @@ export interface OptionsSettingsEditorElements {
 
 const ROTATION_PRESETS = new Set([10_000, 30_000, 60_000]);
 const REFRESH_PRESETS = new Set([30_000, 60_000, 300_000]);
+const RULE_ERROR_MESSAGES: Readonly<Record<RuleValidationErrorCode, string>> = {
+  'invalid-domain': 'Enter a plain domain or a wildcard URL pattern.',
+  'invalid-url-pattern': 'Use a wildcard URL pattern with scheme://host/path and at least one *.',
+  'unsupported-scheme': 'Use http, https, or * as the scheme.',
+  'invalid-host-pattern': 'Enter a valid host pattern.',
+  'invalid-port': 'Use a port from 1 to 65535, or *.',
+};
 
 function selectOption(select: HTMLSelectElement, value: string): boolean {
   const matched = Array.from(select.options).find((option) => option.value === value);
@@ -87,7 +108,62 @@ function clearValidation(control: HTMLElement, validation: HTMLElement): void {
   validation.hidden = true;
 }
 
-/** Edits a complete settings value while retaining filter fields owned by T052. */
+function showRuleValidation(
+  control: HTMLElement,
+  validation: HTMLElement,
+  errors: readonly RuleConfigurationError[],
+): void {
+  control.setAttribute('aria-invalid', 'true');
+  validation.replaceChildren(
+    ...errors.map((error) => {
+      const item = validation.ownerDocument.createElement('li');
+      item.textContent = `Line ${error.line} (${error.value}): ${RULE_ERROR_MESSAGES[error.code]}`;
+      return item;
+    }),
+  );
+  validation.hidden = false;
+}
+
+function previewMessage(decision: RuleDecision): string {
+  switch (decision.reason) {
+    case 'empty-allowlist':
+      return 'Allowed: the allowlist is empty and no blocklist rule matches.';
+    case 'allow-match':
+      return `Allowed: matches ${decision.matchedRule}.`;
+    case 'block-match':
+      return `Blocked: blocklist rule ${decision.matchedRule} wins.`;
+    case 'no-allow-match':
+      return 'Blocked: no allowlist rule matches.';
+    case 'invalid-url':
+      return 'Enter a complete HTTP or HTTPS URL.';
+  }
+}
+
+function renderPreview(
+  previewUrl: HTMLInputElement,
+  previewResult: HTMLElement,
+  configuration: RuleConfiguration | null,
+): void {
+  const url = previewUrl.value.trim();
+
+  if (configuration === null) {
+    previewResult.dataset.state = 'invalid-rules';
+    previewResult.textContent = 'Fix every invalid rule before previewing a URL.';
+    return;
+  }
+
+  if (url === '') {
+    previewResult.dataset.state = 'empty';
+    previewResult.textContent = 'Enter an HTTP or HTTPS URL to preview the current filters.';
+    return;
+  }
+
+  const decision = evaluateUrlRules(url, configuration);
+  previewResult.dataset.state = decision.allowed ? 'allowed' : 'blocked';
+  previewResult.textContent = previewMessage(decision);
+}
+
+/** Edits and validates one complete settings value before it can be saved. */
 export function createOptionsSettingsEditor(
   elements: OptionsSettingsEditorElements,
 ): OptionsSettingsEditor {
@@ -104,6 +180,8 @@ export function createOptionsSettingsEditor(
     clearValidation(elements.rotationDirection, elements.directionValidation);
     clearValidation(elements.refreshInterval, elements.refreshValidation);
     clearValidation(elements.refreshCustom, elements.refreshValidation);
+    clearValidation(elements.allowlist, elements.allowlistValidation);
+    clearValidation(elements.blocklist, elements.blocklistValidation);
   }
 
   elements.rotationInterval.addEventListener('change', renderCustomGroups);
@@ -129,6 +207,10 @@ export function createOptionsSettingsEditor(
       );
       const direction = elements.rotationDirection.value;
       const validDirection = isRotationDirection(direction);
+      const parsedRules = parseRuleConfiguration(
+        elements.allowlist.value,
+        elements.blocklist.value,
+      );
       let valid = true;
 
       if (rotationIntervalMs === null) {
@@ -158,7 +240,31 @@ export function createOptionsSettingsEditor(
         valid = false;
       }
 
-      if (!valid || rotationIntervalMs === null || refreshIntervalMs === null || !validDirection) {
+      if (!parsedRules.valid) {
+        const allowlistErrors = parsedRules.errors.filter((error) => error.list === 'allowlist');
+        const blocklistErrors = parsedRules.errors.filter((error) => error.list === 'blocklist');
+
+        if (allowlistErrors.length > 0) {
+          showRuleValidation(elements.allowlist, elements.allowlistValidation, allowlistErrors);
+        }
+
+        if (blocklistErrors.length > 0) {
+          showRuleValidation(elements.blocklist, elements.blocklistValidation, blocklistErrors);
+        }
+
+        renderPreview(elements.previewUrl, elements.previewResult, null);
+        valid = false;
+      } else {
+        renderPreview(elements.previewUrl, elements.previewResult, parsedRules.configuration);
+      }
+
+      if (
+        !valid ||
+        rotationIntervalMs === null ||
+        refreshIntervalMs === null ||
+        !validDirection ||
+        !parsedRules.valid
+      ) {
         return null;
       }
 
@@ -168,6 +274,8 @@ export function createOptionsSettingsEditor(
         rotationDirection: direction,
         refreshIntervalMs,
         includePinned: elements.includePinned.checked,
+        allowlist: [...parsedRules.configuration.normalizedAllowlist],
+        blocklist: [...parsedRules.configuration.normalizedBlocklist],
       };
     },
     write(settings) {
@@ -186,6 +294,8 @@ export function createOptionsSettingsEditor(
         settings.refreshIntervalMs,
       );
       elements.includePinned.checked = settings.includePinned;
+      elements.allowlist.value = settings.allowlist.join('\n');
+      elements.blocklist.value = settings.blocklist.join('\n');
       elements.allowlistSummary.textContent = formatRuleCount(
         settings.allowlist,
         'All eligible URLs allowed',
@@ -196,6 +306,12 @@ export function createOptionsSettingsEditor(
       );
       clearValidations();
       renderCustomGroups();
+      const parsedRules = parseRuleConfiguration(settings.allowlist, settings.blocklist);
+      renderPreview(
+        elements.previewUrl,
+        elements.previewResult,
+        parsedRules.valid ? parsedRules.configuration : null,
+      );
     },
     setDisabled(disabled) {
       elements.fields.disabled = disabled;

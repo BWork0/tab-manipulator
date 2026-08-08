@@ -44,7 +44,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -66,7 +67,8 @@ button:hover:not(:disabled) {
 
 button:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   outline: 0.1875rem solid var(--focus);
   outline-offset: 0.1875rem;
 }
@@ -201,6 +203,8 @@ h2 {
 }
 
 input[type='number'],
+input[type='url'],
+textarea,
 select {
   width: 100%;
   min-height: 2.75rem;
@@ -209,6 +213,13 @@ select {
   border-radius: 0.5rem;
   color: var(--text);
   background: var(--surface-subtle);
+}
+
+textarea {
+  min-height: 9rem;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+  line-height: 1.4;
 }
 
 .custom-interval {
@@ -233,6 +244,64 @@ select {
 .validation-message {
   margin: 0;
   font-size: 0.88rem;
+}
+
+.validation-list {
+  display: grid;
+  gap: 0.25rem;
+  padding-left: 1.25rem;
+}
+
+.rules-editor {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.25rem;
+  padding-top: 1.25rem;
+  border-top: 0.0625rem solid var(--border);
+}
+
+.rules-heading h3,
+.rules-heading p {
+  margin: 0;
+}
+
+.rules-heading h3 {
+  font-size: 1.05rem;
+}
+
+.rules-heading p {
+  margin-top: 0.25rem;
+  color: var(--muted);
+}
+
+.rule-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field-help code {
+  overflow-wrap: anywhere;
+}
+
+.rule-preview-result {
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.65rem;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--muted);
+  background: var(--surface-subtle);
+  font-weight: 700;
+}
+
+.rule-preview-result[data-state='allowed'] {
+  color: var(--saved);
+}
+
+.rule-preview-result[data-state='blocked'],
+.rule-preview-result[data-state='invalid-rules'] {
+  color: var(--error);
 }
 
 .field-help {
@@ -326,6 +395,7 @@ select {
   button,
   input,
   select,
+  textarea,
   .save-status,
   .settings-card,
   .settings-fields,
@@ -355,6 +425,10 @@ select {
   }
 
   .settings-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .rule-fields {
     grid-template-columns: 1fr;
   }
 

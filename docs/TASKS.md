@@ -445,16 +445,22 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T052 — Implement allowlist/blocklist editor
 
-- [ ] Add labelled multiline allowlist and blocklist inputs with syntax examples.
-- [ ] Validate the entire rule set before save and identify each invalid line.
-- [ ] Normalize/deduplicate only after validation succeeds.
-- [ ] Explain empty allowlist and blocklist-wins precedence.
-- [ ] Add UI-level tests or deterministic DOM tests for validation feedback.
+- [x] Add labelled multiline allowlist and blocklist inputs with syntax examples.
+- [x] Validate the entire rule set before save and identify each invalid line.
+- [x] Normalize/deduplicate only after validation succeeds.
+- [x] Explain empty allowlist and blocklist-wins precedence.
+- [x] Add UI-level tests or deterministic DOM tests for validation feedback.
 
 **Requirements:** FR-031, FR-040  
 **Depends on:** T012, T050  
 **Likely files:** `src/entrypoints/options/main.ts`, `src/entrypoints/options/style.css`  
 **Acceptance:** Invalid rules preserve the last saved settings; valid rules produce the same result in options preview and background actions.
+
+**Verification evidence (2026-08-08):**
+
+- Ten focused options tests passed labelled multiline markup, full-set validation with every offending line, invalid-draft preservation, post-validation normalization/deduplication, canonical saved rendering, and shared matcher preview behavior.
+- The background boundary regression rejected invalid allowlist and blocklist rules after a valid update without issuing another settings-store write.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 271 automated tests, and Chromium/Firefox MV3 production builds.
 
 ### T053 — Add privacy and permission explanation
 

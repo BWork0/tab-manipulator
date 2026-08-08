@@ -382,6 +382,20 @@ describe('background application', () => {
       command: 'update-settings',
       error: { code: 'invalid-settings' },
     });
+    await expect(
+      send({
+        type: 'update-settings',
+        settings: {
+          ...validSettings,
+          allowlist: ['allowed.example', 'invalid domain'],
+          blocklist: ['https://blocked.example:70000/*'],
+        },
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      command: 'update-settings',
+      error: { code: 'invalid-settings' },
+    });
 
     expect(harness.settingsStore.updateSettings).toHaveBeenCalledOnce();
     expect(harness.settingsStore.updateSettings).toHaveBeenCalledWith(validSettings);
