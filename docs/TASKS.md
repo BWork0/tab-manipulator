@@ -505,16 +505,24 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T061 — Verify performance and idle behavior
 
-- [ ] Measure popup load/render with 100 tabs and document the reference environment/result.
-- [ ] Run rotation and refresh with 50+ tabs and check for action storms or UI stalls.
-- [ ] Confirm there is no timer, alarm, listener loop, or storage write polling while idle.
-- [ ] Confirm favicon failures do not delay interaction.
-- [ ] Profile storage writes during an active schedule to verify they occur only on state changes/ticks.
+- [x] Measure popup load/render with 100 tabs and document the reference environment/result.
+- [x] Run rotation and refresh with 50+ tabs and check for action storms or UI stalls.
+- [x] Confirm there is no timer, alarm, listener loop, or storage write polling while idle.
+- [x] Confirm favicon failures do not delay interaction.
+- [x] Profile storage writes during an active schedule to verify they occur only on state changes/ticks.
 
 **Requirements:** Sections 5.2 and 13 performance  
 **Depends on:** T060  
 **Likely files:** Implementation notes or `docs/QA.md`; code only if defects are found  
 **Acceptance:** PRD performance thresholds pass or a measured blocker is documented and fixed before release.
+
+**Verification evidence (2026-08-08):**
+
+- The 100-row LinkeDOM popup render measured 9.09 ms on Windows 10.0.19045 with Node.js 24.10.0 on an Intel64 Family 6 Model 167 processor, below the 500 ms PRD threshold. Deferred favicon failure left selection controls interactive.
+- The production-composed fake-browser lifecycle processed 55 tabs in 75.75 ms with one activation and 55 unique reload attempts. Duplicate rotation and refresh alarm deliveries did not create an extra action pass.
+- Idle startup created no timeout, browser alarm, or storage mutation and registered each background listener once even when application startup was requested twice.
+- Storage profiling observed writes only when rotation/refresh records were started or ticked; intervening snapshot and tab-list reads performed no storage mutation. Stops removed both alarms and left no timeout.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 280 automated tests, and Chromium/Firefox MV3 production builds. Detailed environment and measurement notes are recorded in `docs/QA.md`.
 
 ### T062 — Run accessibility review
 

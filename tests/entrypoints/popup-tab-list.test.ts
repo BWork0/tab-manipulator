@@ -221,7 +221,7 @@ describe('popup tab selection', () => {
     expect(requestTabList).toHaveBeenCalledTimes(2);
   });
 
-  it('defers favicon URLs until after rows and controls are interactive', () => {
+  it('defers favicon failures until after rows and controls are interactive', () => {
     const page = createDocument();
     const document = page.document as unknown as Document;
     const scheduled: Array<() => void> = [];
@@ -241,6 +241,11 @@ describe('popup tab selection', () => {
 
     scheduled[0]!();
     expect(favicon.src).toBe('https://one.example/favicon.ico');
+
+    favicon.dispatchEvent(new page.window.Event('error'));
+    expect(document.querySelector('img')).toBeNull();
+    expect(viewElements.selectAllButton.disabled).toBe(false);
+    expect(required<HTMLInputElement>(document, 'input[type="checkbox"]').disabled).toBe(false);
   });
 
   it('renders 100 synthetic rows in under 500 ms', () => {
@@ -265,7 +270,7 @@ describe('popup tab selection', () => {
     );
 
     const durationMs = performance.now() - startedAt;
-    console.info(`T041 synthetic 100-row render: ${durationMs.toFixed(2)} ms.`);
+    console.info(`T061 synthetic 100-row render: ${durationMs.toFixed(2)} ms.`);
     expect(page.document.querySelectorAll('.tab-item')).toHaveLength(100);
     expect(durationMs).toBeLessThan(500);
   });
