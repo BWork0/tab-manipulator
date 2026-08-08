@@ -228,6 +228,55 @@
             </div>
           </section>
         </form>
+
+        <section class="settings-card privacy-card" aria-labelledby="privacy-heading">
+          <div class="section-heading">
+            <div>
+              <h2 id="privacy-heading">Privacy and permissions</h2>
+              <p>Your settings and browsing details stay on this device.</p>
+            </div>
+          </div>
+
+          <div class="privacy-details">
+            <div>
+              <h3>Local-only data</h3>
+              <p>
+                Settings are saved in extension-local storage. Tab titles and URLs are stored only
+                as runtime descriptors for active rotation or refresh targets. Stopping a schedule
+                deletes its runtime tab descriptors.
+              </p>
+              <p>
+                No browsing metadata, settings, error details, or usage data is sent over the
+                network. Tab Manipulator uses no analytics, remote logging, or remote code.
+              </p>
+            </div>
+
+            <div>
+              <h3>Permissions used</h3>
+              <p>This build requests exactly these extension permissions:</p>
+              <dl id="permission-list" class="permission-list" aria-label="Extension permissions">
+                <div data-permission="tabs">
+                  <dt><code>tabs</code></dt>
+                  <dd>
+                    Reads tab titles, URLs, pinned state, and order so selected tabs can be
+                    identified; activates rotation targets and reloads refresh targets.
+                  </dd>
+                </div>
+                <div data-permission="storage">
+                  <dt><code>storage</code></dt>
+                  <dd>Saves settings and active schedule state locally in the extension.</dd>
+                </div>
+                <div data-permission="alarms">
+                  <dt><code>alarms</code></dt>
+                  <dd>
+                    Schedules reliable work at intervals of 30 seconds or longer across background
+                    suspension.
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
 

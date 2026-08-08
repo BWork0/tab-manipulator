@@ -464,15 +464,22 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T053 — Add privacy and permission explanation
 
-- [ ] Explain local-only storage, no analytics/network transfer, and why `tabs` is required.
-- [ ] State that stopping schedules deletes their runtime tab descriptors.
-- [ ] Link no remote resources from the options page.
-- [ ] Confirm copy is accurate against the generated manifest.
+- [x] Explain local-only storage, no analytics/network transfer, and why `tabs` is required.
+- [x] State that stopping schedules deletes their runtime tab descriptors.
+- [x] Link no remote resources from the options page.
+- [x] Confirm copy is accurate against the generated manifest.
 
 **Requirements:** Section 12  
 **Depends on:** T050, T002  
 **Likely files:** `src/entrypoints/options/index.html`, `src/entrypoints/options/main.ts`  
 **Acceptance:** The page's permission list exactly matches both production manifests and no outbound request is generated during use.
+
+**Verification evidence (2026-08-08):**
+
+- Three focused privacy tests passed local-only/no-analytics copy, runtime-descriptor cleanup copy, exact permission names and `tabs` rationale, packaged resource references, and absence of network clients in the options source.
+- Direct inspection confirmed the Chromium and Firefox MV3 manifests both declare exactly `tabs`, `storage`, and `alarms`, matching the options-page list; neither manifest contains host permissions or content scripts.
+- Both built options pages referenced only packaged scripts and styles. The generated module-preload helper accesses only its extension-local validation chunk, so use produces no outbound request.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 274 automated tests, and Chromium/Firefox MV3 production builds.
 
 ## Phase 6: Integration, quality, and release
 
