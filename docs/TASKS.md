@@ -485,16 +485,23 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T060 — Complete integration and regression tests
 
-- [ ] Cover start-to-tick-to-stop for rotation and refresh through the message boundary.
-- [ ] Cover background reinitialization, delayed alarms, ambiguous recovery, stale IDs, and partial browser API failures.
-- [ ] Cover settings changes affecting the next active-schedule action.
-- [ ] Assert badge changes and runtime-record cleanup.
-- [ ] Ensure fake-browser state resets between cases.
+- [x] Cover start-to-tick-to-stop for rotation and refresh through the message boundary.
+- [x] Cover background reinitialization, delayed alarms, ambiguous recovery, stale IDs, and partial browser API failures.
+- [x] Cover settings changes affecting the next active-schedule action.
+- [x] Assert badge changes and runtime-record cleanup.
+- [x] Ensure fake-browser state resets between cases.
 
 **Requirements:** Section 15 automated coverage  
 **Depends on:** T033, T044, T052  
 **Likely files:** `tests/integration/*`  
 **Acceptance:** The test suite is deterministic, leaves no timers/listeners open, and exercises every P0 requirement at least once.
+
+**Verification evidence (2026-08-08):**
+
+- Four production-composed background integration tests passed message-boundary rotation and refresh lifecycles, delayed duplicate alarm delivery, per-target refresh failure isolation, next-action pinned-setting revalidation, and stale-ID ambiguous recovery after background reinitialization.
+- Integration cleanup assertions proved no injected timeout remained after a case, while fake-browser state and listeners reset before and after every case. The flows also verified running, failed-action, attention, and idle badge changes plus persisted runtime-record deletion on stop.
+- The complete 278-test suite passed and covers every P0 group through tab-list/popup tests (FR-001–003), rotation tests (FR-010–013), refresh tests (FR-020–022), settings/rule tests (FR-030–031), storage/scheduler/recovery tests (FR-040–043), and messaging/background/status tests (FR-050–051).
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 278 automated tests, and Chromium/Firefox MV3 production builds.
 
 ### T061 — Verify performance and idle behavior
 
