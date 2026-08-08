@@ -191,17 +191,32 @@
           ></p>
 
           <div class="automation-actions">
-            <button id="rotation-primary-button" type="button" disabled>Start rotation</button>
+            <button
+              id="rotation-primary-button"
+              type="button"
+              aria-describedby="rotation-validation"
+              disabled
+            >
+              Start rotation
+            </button>
             <button
               id="rotation-replace-button"
               class="button--quiet"
               type="button"
+              aria-describedby="rotation-validation"
               disabled
               hidden
             >
               Replace rotation&hellip;
             </button>
-            <button id="rotation-stop-button" class="button--danger" type="button" disabled hidden>
+            <button
+              id="rotation-stop-button"
+              class="button--danger"
+              type="button"
+              aria-describedby="rotation-validation"
+              disabled
+              hidden
+            >
               Stop rotation
             </button>
           </div>
@@ -215,7 +230,12 @@
           >
             <p>Replace the current rotation with the selected tabs and settings?</p>
             <div class="confirmation__actions">
-              <button id="rotation-confirm-replace-button" type="button" disabled>
+              <button
+                id="rotation-confirm-replace-button"
+                type="button"
+                aria-describedby="rotation-validation"
+                disabled
+              >
                 Replace and start
               </button>
               <button
@@ -283,14 +303,41 @@
           ></p>
 
           <div class="automation-actions">
-            <button id="refresh-start-button" type="button" disabled>Start refresh</button>
-            <button id="refresh-replace-button" class="button--quiet" type="button" disabled hidden>
+            <button
+              id="refresh-start-button"
+              type="button"
+              aria-describedby="refresh-validation"
+              disabled
+            >
+              Start refresh
+            </button>
+            <button
+              id="refresh-replace-button"
+              class="button--quiet"
+              type="button"
+              aria-describedby="refresh-validation"
+              disabled
+              hidden
+            >
               Replace refresh&hellip;
             </button>
-            <button id="refresh-stop-button" class="button--danger" type="button" disabled hidden>
+            <button
+              id="refresh-stop-button"
+              class="button--danger"
+              type="button"
+              aria-describedby="refresh-validation"
+              disabled
+              hidden
+            >
               Stop refresh
             </button>
-            <button id="refresh-now-button" class="button--quiet" type="button" disabled>
+            <button
+              id="refresh-now-button"
+              class="button--quiet"
+              type="button"
+              aria-describedby="refresh-validation refresh-result"
+              disabled
+            >
               Refresh now
             </button>
           </div>
@@ -304,7 +351,12 @@
           >
             <p>Replace the current refresh schedule with the selected tabs and interval?</p>
             <div class="confirmation__actions">
-              <button id="refresh-confirm-replace-button" type="button" disabled>
+              <button
+                id="refresh-confirm-replace-button"
+                type="button"
+                aria-describedby="refresh-validation"
+                disabled
+              >
                 Replace and start
               </button>
               <button

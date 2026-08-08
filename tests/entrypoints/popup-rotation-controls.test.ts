@@ -238,6 +238,7 @@ describe('popup rotation controls', () => {
 
   it('dispatches pause, resume, and stop from persisted state', async () => {
     const harness = createHarness();
+    const restoredStartFocus = vi.spyOn(harness.elements.primaryButton, 'focus');
     harness.controller.setSnapshot(snapshot(rotation('running')));
     harness.elements.primaryButton.click();
     await vi.waitFor(() =>
@@ -258,6 +259,11 @@ describe('popup rotation controls', () => {
       expect(harness.sendCommand).toHaveBeenLastCalledWith({ type: 'stop-rotation' }),
     );
     expect(harness.sendCommand).toHaveBeenCalledTimes(3);
+    await vi.waitFor(() => {
+      expect(harness.elements.primaryButton.hidden).toBe(false);
+      expect(harness.elements.primaryButton.textContent).toBe('Start rotation');
+      expect(restoredStartFocus).toHaveBeenCalledOnce();
+    });
   });
 
   it('requires inline confirmation before replacing a rotation', async () => {

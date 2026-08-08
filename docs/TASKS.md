@@ -526,11 +526,11 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T062 — Run accessibility review
 
-- [ ] Use every popup and options action by keyboard only.
-- [ ] Verify accessible names, group labels, status announcements, validation association, and focus restoration.
-- [ ] Check visible focus and non-color state indicators in light and dark mode.
-- [ ] Check both pages at 200% zoom.
-- [ ] Fix all release-blocking WCAG 2.2 AA issues.
+- [x] Use every popup and options action by keyboard only.
+- [x] Verify accessible names, group labels, status announcements, validation association, and focus restoration.
+- [x] Check visible focus and non-color state indicators in light and dark mode.
+- [x] Check both pages at 200% zoom.
+- [x] Fix all release-blocking WCAG 2.2 AA issues.
 
 **Requirements:** Section 13 accessibility  
 **Depends on:** T044, T052, T053  

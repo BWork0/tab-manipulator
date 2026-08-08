@@ -191,6 +191,11 @@ export function createRotationControlsController({
         clearValidation();
         hideConfirmation();
         announce(commandSuccessMessage(command));
+
+        if (command.type === 'stop-rotation') {
+          return elements.primaryButton;
+        }
+
         return command.type === 'start-rotation' && command.replaceExisting
           ? elements.replaceButton
           : null;

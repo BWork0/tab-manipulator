@@ -22,22 +22,49 @@
   --paused: #8a4b08;
   --attention: #b42318;
   --attention-surface: #fff1f0;
+  --scrollbar-thumb: #6b778c;
+  --scrollbar-thumb-hover: #46546a;
   --shadow: 0 0.25rem 1rem rgb(20 33 61 / 8%);
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 0.55rem;
+  height: 0.55rem;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 0.125rem solid transparent;
+  border-radius: 999px;
+  background: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
 }
 
 html {
+  overflow-x: hidden;
   background: #f4f6fa;
 }
 
 body {
   margin: 0;
   width: 22rem;
-  max-width: 100vw;
   min-width: 0;
+  overflow-x: hidden;
   color: var(--text);
   background: #f4f6fa;
 }
@@ -394,6 +421,7 @@ main {
   padding: 0.125rem;
   list-style: none;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-gutter: stable;
 }
 
@@ -512,6 +540,8 @@ main {
     --paused: #f5bd68;
     --attention: #ff9b91;
     --attention-surface: #371d22;
+    --scrollbar-thumb: #71809a;
+    --scrollbar-thumb-hover: #8bb5ff;
     --shadow: 0 0.25rem 1rem rgb(0 0 0 / 25%);
   }
 

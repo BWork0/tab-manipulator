@@ -189,6 +189,11 @@ export function createRefreshControlsController({
         } else {
           announce(commandSuccessMessage(command));
         }
+
+        if (command.type === 'stop-refresh') {
+          return elements.startButton;
+        }
+
         return command.type === 'start-refresh' && command.replaceExisting
           ? elements.replaceButton
           : null;
@@ -200,12 +205,21 @@ export function createRefreshControlsController({
         elements.confirmation.hidden = false;
       }
 
+      if (errorFocusTarget === elements.confirmReplaceButton) {
+        elements.confirmation.hidden = false;
+      }
+
       showValidation(`Refresh command failed. ${commandErrorMessage(response.code)}`);
       return response.code === 'replacement-confirmation-required'
         ? elements.confirmReplaceButton
         : errorFocusTarget;
     } catch {
       await refreshAfterError();
+
+      if (errorFocusTarget === elements.confirmReplaceButton) {
+        elements.confirmation.hidden = false;
+      }
+
       showValidation(`Refresh command failed. ${commandErrorMessage('browser-operation-failed')}`);
       return errorFocusTarget;
     }

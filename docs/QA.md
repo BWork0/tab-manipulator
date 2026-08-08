@@ -23,3 +23,32 @@ This document records implementation-task evidence that is not fully represented
 ```
 
 The two files passed all nine focused cases. These are deterministic implementation measurements; T063 owns real-browser manual matrix evidence, and T066 owns the 60-minute reliability test.
+
+## T062 — Accessibility review
+
+**Date:** 2026-08-08  
+**Status:** Passed.
+
+### Completed checks
+
+- Reviewed the popup and options markup for programmatic control names, fieldset and custom group labels, description references, live status/alert regions, and non-color state text.
+- Reviewed every popup controller path for keyboard focus behavior. Fixed rotation and refresh Stop commands so focus moves from the hidden Stop control to the restored Start control. Fixed refresh replacement failures so the visible confirmation retains focus after state synchronization.
+- Associated rotation and refresh command controls with their inline validation messages. Associated Refresh now with both validation and aggregate-result feedback.
+- Verified the light and dark text, status, and focus color pairs used by both pages. The measured contrast ratios range from **5.08:1** to **16.27:1**, meeting the WCAG 2.2 AA 4.5:1 threshold for normal text; focus indicators also remain visually distinct from their adjacent surfaces.
+- Added deterministic entrypoint checks covering control and group names, valid `aria-describedby` targets, live feedback, `:focus-visible` rules, dark-mode rules, and narrow-viewport layouts. Focused popup tests cover confirmation entry/cancellation, validation focus, command-error focus, and focus restoration after Stop.
+
+### Browser verification
+
+- The user verified the popup and options actions by keyboard in Google Chrome and Mozilla Firefox, including focus restoration after stopping automation.
+- The user confirmed accessible control behavior, visible focus, and non-color state indicators in light and dark mode.
+- The user confirmed both pages remain usable at 200% zoom without clipped controls or horizontal page scrolling.
+- The user confirmed the custom thin scrollbar fits the design in both browsers and that the corrected Firefox popup width contains the complete layout.
+- No release-blocking WCAG 2.2 AA issue remains from the T062 review.
+
+### Commands
+
+```text
+.\node_modules\.bin\vitest.cmd run tests/entrypoints/accessibility.test.ts tests/entrypoints/popup-rotation-controls.test.ts tests/entrypoints/popup-refresh-controls.test.ts --reporter=verbose
+```
+
+All 22 focused cases passed after the accessibility fixes.

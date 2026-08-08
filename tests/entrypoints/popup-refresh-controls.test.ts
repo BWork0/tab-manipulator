@@ -231,6 +231,7 @@ describe('popup refresh controls', () => {
     const harness = createHarness();
     const confirmationFocus = vi.spyOn(harness.elements.confirmReplaceButton, 'focus');
     const restoredFocus = vi.spyOn(harness.elements.replaceButton, 'focus');
+    const restoredStartFocus = vi.spyOn(harness.elements.startButton, 'focus');
     harness.controller.setSnapshot(active);
     harness.elements.replaceButton.click();
 
@@ -257,6 +258,10 @@ describe('popup refresh controls', () => {
       expect(harness.sendCommand).toHaveBeenLastCalledWith({ type: 'stop-refresh' }),
     );
     expect(harness.sendCommand).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => {
+      expect(harness.elements.startButton.hidden).toBe(false);
+      expect(restoredStartFocus).toHaveBeenCalledOnce();
+    });
   });
 
   it('refreshes now without changing the active schedule and exposes partial counts', async () => {
@@ -369,5 +374,26 @@ describe('popup refresh controls', () => {
       expect.stringContaining('Refresh command failed'),
     );
     expect(confirmationFocus).toHaveBeenCalledOnce();
+  });
+
+  it('keeps replacement confirmation visible and focused after a command failure', async () => {
+    const active = snapshot(refreshSchedule());
+    const harness = createHarness();
+    const confirmationFocus = vi.spyOn(harness.elements.confirmReplaceButton, 'focus');
+    harness.sendCommand.mockResolvedValueOnce({
+      ok: false,
+      code: 'browser-operation-failed',
+    });
+    harness.refreshSnapshot.mockResolvedValueOnce(active);
+    harness.controller.setSnapshot(active);
+    harness.elements.replaceButton.click();
+    harness.elements.confirmReplaceButton.click();
+
+    await vi.waitFor(() => expect(harness.refreshSnapshot).toHaveBeenCalledOnce());
+    await vi.waitFor(() => {
+      expect(harness.elements.confirmation.hidden).toBe(false);
+      expect(harness.elements.confirmReplaceButton.disabled).toBe(false);
+      expect(confirmationFocus).toHaveBeenCalledTimes(2);
+    });
   });
 });
