@@ -560,16 +560,23 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T064 — Audit manifests, permissions, privacy, and packages
 
-- [ ] Inspect generated Chromium and Firefox manifests rather than only source config.
-- [ ] Confirm MV3, permissions, icons, action popup, options page, and absence of content scripts/host permissions.
-- [ ] Observe network activity during representative usage and confirm no extension-originated traffic.
-- [ ] Verify stopping schedules removes runtime URL/title descriptors.
-- [ ] Build production ZIPs and inspect their contents for source maps, tests, docs, or starter assets that should not ship.
+- [x] Inspect generated Chromium and Firefox manifests rather than only source config.
+- [x] Confirm MV3, permissions, icons, action popup, options page, and absence of content scripts/host permissions.
+- [x] Observe network activity during representative usage and confirm no extension-originated traffic.
+- [x] Verify stopping schedules removes runtime URL/title descriptors.
+- [x] Build production ZIPs and inspect their contents for source maps, tests, docs, or starter assets that should not ship.
 
 **Requirements:** Sections 11–12; build acceptance  
 **Depends on:** T063  
 **Likely files:** `wxt.config.ts`, `package.json`, source/assets if defects are found  
 **Acceptance:** Both archives contain only necessary production artifacts and match the privacy/permission claims.
+
+**Verification evidence (2026-08-10):**
+
+- Direct generated-manifest inspection confirmed MV3, exactly `tabs`, `storage`, and `alarms`, all five icon sizes, the action popup, the options page, and no content scripts or host permissions for Chromium and Firefox. Firefox also declares required data collection as `none`.
+- A fresh-profile Edge run exercised representative popup/options, rotation, and refresh actions without non-local extension resource activity; after both schedules stopped, extension storage contained no runtime target URL/title descriptor.
+- The Chromium and Firefox extension ZIPs each contain 14 files exactly matching their production output directories, with no source maps, tests, docs, coverage, raw requirements, QA runners, or starter assets. The Firefox review-source ZIP was reduced to the 49 inputs needed to rebuild.
+- `pnpm audit:privacy`, focused privacy/storage/integration tests, TypeScript compilation, production ZIP builds, exact archive/member comparisons, and artifact hashing passed. Detailed commands and hashes are recorded in `docs/QA.md`.
 
 ### T065 — Resolve store-blocking product decisions
 

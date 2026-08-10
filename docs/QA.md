@@ -103,3 +103,47 @@ node scripts/t063-firefox-matrix.mjs
 ```
 
 The reproducible real-browser runners are `scripts/t063-browser-matrix.mjs` and `scripts/t063-firefox-matrix.mjs`. Opera is covered by the Chromium runner as a non-blocking best-effort target under the PRD.
+
+## T064 — Manifest, permission, privacy, and package audit
+
+**Date:** 2026-08-10  
+**Status:** Passed.
+
+### Generated manifests
+
+- Direct inspection of `.output/chrome-mv3/manifest.json` and `.output/firefox-mv3/manifest.json` confirmed Manifest V3 and exactly `tabs`, `storage`, and `alarms` in both permission lists.
+- Both manifests contain the complete 16, 32, 48, 96, and 128-pixel icon set, `popup.html` as the action popup, and `options.html` as the tab-based options page.
+- Chromium registers `background.js` as its service worker. Firefox registers the same background entrypoint through its MV3-compatible background script representation.
+- Neither manifest contains `content_scripts`, `host_permissions`, or `optional_host_permissions`.
+- The Firefox manifest now declares `browser_specific_settings.gecko.data_collection_permissions.required` as `none`, matching the extension's local-only privacy behavior. The stable Firefox ID remains deliberately deferred to T065.
+
+### Privacy and runtime cleanup
+
+- A fresh temporary Microsoft Edge profile loaded the production Chromium artifact and exercised tab discovery, rotation start/stop, Refresh now, refresh start/stop, and options-page loading against two local test pages.
+- The browser observed no non-local popup or options resource activity. The explicit Refresh now requests reached only the two user-selected local test pages, as expected for the product action; the extension generated no analytics, logging, or service traffic.
+- The same run inspected extension-local storage after both schedules stopped and found no record retaining target URL or title descriptors.
+- Packaged-source inspection found no network client in application code. The only generated `fetch` token is Vite's module-preload fallback, which can load only the packaged validation chunk referenced by the extension pages.
+
+### Production archives
+
+| Artifact                            | Files | SHA-256                                                            |
+| ----------------------------------- | ----: | ------------------------------------------------------------------ |
+| `tab-manipulator-0.0.0-chrome.zip`  |    14 | `38b8bac98d49ccbc61497a5dd319df908f43f17348737c0df8e34565488522a0` |
+| `tab-manipulator-0.0.0-firefox.zip` |    14 | `9429e9527660ca471657b31a0c6d16f324f9991b98e5a8b64f58d6613e90eb15` |
+| `tab-manipulator-0.0.0-sources.zip` |    49 | `ed36eca1bb9ebbe5f11f89f550f755dc2ce494f545ff14a90b5046fc3c03a2c2` |
+
+- Each production extension ZIP exactly matches its generated output directory and contains only the manifest, background bundle, popup/options documents and assets, shared chunks, and five product icons.
+- Neither production ZIP contains source maps, tests, documentation, coverage output, raw requirements, QA runners, or starter assets.
+- The Firefox review-source ZIP excludes coverage, tests, product/QA documentation, raw requirements, and QA-only scripts. It retains the package and lock files, WXT/TypeScript configuration, product source, icons, and the install-hook script required by `pnpm install`.
+
+### Commands
+
+```text
+pnpm.cmd audit:privacy
+pnpm.cmd compile
+.\node_modules\.bin\vitest.cmd run tests/storage/runtime-store.test.ts tests/entrypoints/options-privacy.test.ts tests/integration/background-flows.test.ts --reporter=verbose
+pnpm.cmd zip
+pnpm.cmd zip:firefox
+```
+
+The manifest and archive audit compared each ZIP member list with its generated build, asserted exact permissions and required entrypoints/icons, rejected forbidden manifest fields and package paths, and hashed all final archives.

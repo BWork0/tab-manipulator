@@ -15,6 +15,7 @@
     "compile": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "audit:privacy": "node scripts/t064-privacy-audit.mjs",
     "validate": "pnpm format:check && pnpm format:verify-safeguards && pnpm compile && pnpm test && pnpm build && pnpm build:firefox",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
