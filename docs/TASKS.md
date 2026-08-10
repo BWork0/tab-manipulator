@@ -580,16 +580,23 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T065 — Resolve store-blocking product decisions
 
-- [ ] Replace the working title and placeholder copy with the final product name/description.
-- [ ] Add the stable Firefox extension ID.
-- [ ] Record minimum browser versions.
-- [ ] Decide whether 10 or 30 seconds is the production default using beta timing results.
-- [ ] Confirm launch order and store ownership for Chrome, Edge, and Firefox.
+- [x] Replace the working title and placeholder copy with the final product name/description.
+- [x] Add the stable Firefox extension ID.
+- [x] Record minimum browser versions.
+- [x] Decide whether 10 or 30 seconds is the production default using beta timing results.
+- [x] Confirm launch order and store ownership for Chrome, Edge, and Firefox.
 
 **Requirements:** PRD section 18  
 **Depends on:** T063  
 **Likely files:** `package.json`, `wxt.config.ts`, popup/options copy, release notes  
 **Acceptance:** No placeholder identity or unresolved store metadata remains in production packages.
+
+**Verification evidence (2026-08-10):**
+
+- Production identity is finalized as Tab Manipulator 1.0.0 with the privacy-specific store description and existing green linked-tab icon set. The release record assigns all three store listings to BWork0 and defines the sequential Chrome, Edge, then Firefox launch order.
+- Generated and packaged Chromium manifests declare Chrome/Edge 120 as the minimum. Generated and packaged Firefox manifests declare Firefox 140 as the minimum and use the stable `tab-manipulator@bwork0.github.io` extension ID. Both packages retain exactly `tabs`, `storage`, and `alarms`.
+- The production default is now 30-second rotation. T063 observed both 10-second and 30-second ticks in every required browser, while the documented background-suspension constraint supports 30 seconds as the reliable default and retains 10 seconds as a labelled best-effort preset.
+- `pnpm validate` passed formatting, formatting safeguards, TypeScript compilation, all 286 automated tests, and both production builds. Chromium and Firefox 1.0.0 ZIP builds passed direct package-manifest assertions for final identity, versions, minimum browsers, permissions, and Firefox ID.
 
 ### T066 — Final release gate
 

@@ -1,8 +1,8 @@
 {
   "name": "tab-manipulator",
-  "description": "Automatically rotate and refresh selected browser tabs on a schedule.",
+  "description": "Rotate selected tabs automatically and refresh them on a schedule, with all data kept on your device.",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "scripts": {

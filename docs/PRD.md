@@ -3,7 +3,7 @@
 **Status:** Draft for implementation  
 **Version:** 1.0  
 **Date:** 2026-08-04  
-**Product:** Tab Manipulator (working title)  
+**Product:** Tab Manipulator  
 **Implementation baseline:** WXT 0.21.x, Vanilla TypeScript, Manifest V3
 
 ## 1. Document purpose
@@ -50,7 +50,7 @@ The product must remain useful after the background context is suspended and mus
 
 ### 5.1 Goals
 
-- Provide a zero-configuration path to start 10-second rotation or 5-minute refresh.
+- Provide a zero-configuration path to start reliable 30-second rotation or 5-minute refresh.
 - Reduce repeated manual tab switching and reloading.
 - Make automation state and target scope visible and instantly controllable.
 - Preserve privacy by processing all configuration and browsing metadata locally.
@@ -79,7 +79,7 @@ These measurements are release-test criteria. The extension will not collect pro
 | Developer / QA    | Repeatedly reload local or staging pages           | Select current tabs, choose a 30-second custom refresh, refresh immediately when needed |
 | Support agent     | Keep a small knowledge or ticket set accessible    | Rotate selected unpinned tabs and pause instantly during a call                         |
 | Researcher        | Review a defined subset of many tabs               | Select only relevant tabs and rotate left-to-right                                      |
-| Casual power user | Start common automation without configuration work | Use the default 10-second rotation or 5-minute refresh presets                          |
+| Casual power user | Start common automation without configuration work | Use the default 30-second rotation or 5-minute refresh presets                          |
 
 ## 7. MVP scope
 
@@ -131,7 +131,7 @@ An `Advanced settings` link opens the options page. The popup remembers the last
 
 ### 8.2 Defaults
 
-- Rotation interval: 10 seconds.
+- Rotation interval: 30 seconds.
 - Rotation direction: left-to-right.
 - Refresh interval: 5 minutes.
 - Pinned tabs: excluded.
@@ -554,12 +554,12 @@ For Chrome, Edge, and Firefox:
 | Large tab counts slow popup                | Poor UX for power users                        | Render simple rows, avoid favicon blocking, measure at 100 tabs, virtualize only if necessary                 |
 | Repeated refresh burdens sites or devices  | Resource/network impact                        | Minimum 30 seconds, clear active state, fast stop, no missed-run replay                                       |
 
-## 18. Open release decisions
+## 18. Release decisions
 
-These do not block implementation of the MVP core but must be resolved before store submission:
+The first-release store identity and rollout decisions are resolved as follows:
 
-- Final product name, description, and icon design.
-- Stable Firefox extension ID and store publisher identity.
-- Exact minimum supported browser versions.
-- Whether the 10-second rotation preset should remain the default after beta reliability testing; fallback default is 30 seconds.
-- Whether Chrome and Edge launch simultaneously or sequentially.
+- The final product name is **Tab Manipulator**. The production description is **“Rotate selected tabs automatically and refresh them on a schedule, with all data kept on your device.”** The existing green linked-tab icon set is the approved launch artwork.
+- The stable Firefox extension ID is `tab-manipulator@bwork0.github.io`. BWork0 is the publisher and owner of record for the Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons listings; account credentials remain outside the repository.
+- Minimum supported versions are Chrome 120, Edge 120, and Firefox 140. The Chromium minimum is required for 30-second production alarms, and Firefox 140 is the supported ESR baseline selected for the first release.
+- The production default is 30-second rotation. Cross-browser beta testing observed successful 10-second and 30-second ticks, but sub-30-second execution remains best effort across background suspension; the 10-second preset remains available with its timing disclosure.
+- Stores launch sequentially: Chrome first, Edge after the Chrome listing is accepted and smoke-tested, then Firefox after the Edge listing is accepted and smoke-tested. BWork0 owns each submission and its store-specific release credentials.

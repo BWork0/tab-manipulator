@@ -147,3 +147,23 @@ pnpm.cmd zip:firefox
 ```
 
 The manifest and archive audit compared each ZIP member list with its generated build, asserted exact permissions and required entrypoints/icons, rejected forbidden manifest fields and package paths, and hashed all final archives.
+
+## T065 — Store-blocking product decisions
+
+**Date:** 2026-08-10  
+**Status:** Passed.
+
+### Resolved metadata
+
+- Final product identity is Tab Manipulator 1.0.0 with the description “Rotate selected tabs automatically and refresh them on a schedule, with all data kept on your device.” The existing green linked-tab artwork is approved for launch.
+- The Firefox manifest uses the stable ID `tab-manipulator@bwork0.github.io`. Minimum browser versions are Chrome 120, Edge 120, and Firefox 140.
+- BWork0 is the owner of record for all three store listings. Launch order is Chrome first, Edge after Chrome acceptance and smoke testing, then Firefox after Edge acceptance and smoke testing.
+- New installations default to 30-second rotation. T063 observed successful 10-second and 30-second beta ticks in every required browser, but the reliable background-alarm boundary supports 30 seconds as the production default. The 10-second best-effort preset remains available.
+
+### Verification
+
+- `pnpm.cmd validate` passed format checking, formatting safeguards, TypeScript compilation, all 286 tests, and Chromium/Firefox MV3 production builds.
+- `pnpm.cmd zip` and `pnpm.cmd zip:firefox` produced `tab-manipulator-1.0.0-chrome.zip` and `tab-manipulator-1.0.0-firefox.zip`. Direct inspection of each ZIP's manifest confirmed the final identity, version, browser minimum, Firefox ID where applicable, and exactly `tabs`, `storage`, and `alarms`.
+- Chromium ZIP SHA-256: `a7a61f5cec4fdf839bd7975e5ecf171a01c14fcb54f15948279d569db5df83eb`.
+- Firefox ZIP SHA-256: `f6cc2d79f1ad3f93d6a6c4a100ad27a538eddad6f8424749639f8cfb1729f748`.
+- A metadata-only rerun of the T064 browser audit was attempted separately in Edge and Chrome. The local CDP runner timed out at `Runtime.enable` in Edge and `Extensions.loadUnpacked` in Chrome; prior T064 runtime/privacy evidence remains valid, and T065's direct generated/package manifest checks passed without a permission or runtime-code change.

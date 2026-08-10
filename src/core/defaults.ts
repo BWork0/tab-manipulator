@@ -3,7 +3,7 @@ import { SETTINGS_SCHEMA_VERSION, type RotationDirection, type Settings } from '
 export const MIN_ROTATION_INTERVAL_MS = 10_000;
 export const MIN_REFRESH_INTERVAL_MS = 30_000;
 
-export const DEFAULT_ROTATION_INTERVAL_MS = 10_000;
+export const DEFAULT_ROTATION_INTERVAL_MS = 30_000;
 export const DEFAULT_ROTATION_DIRECTION: RotationDirection = 'forward';
 export const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60_000;
 export const DEFAULT_INCLUDE_PINNED = false;

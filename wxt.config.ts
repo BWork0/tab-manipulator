@@ -19,18 +19,23 @@ export default defineConfig({
   },
   manifest: ({ browser }) => ({
     name: 'Tab Manipulator',
-    description: 'Automatically rotate and refresh selected browser tabs on a schedule.',
+    description:
+      'Rotate selected tabs automatically and refresh them on a schedule, with all data kept on your device.',
     permissions: ['tabs', 'storage', 'alarms'],
     ...(browser === 'firefox'
       ? {
           browser_specific_settings: {
             gecko: {
+              id: 'tab-manipulator@bwork0.github.io',
+              strict_min_version: '140.0',
               data_collection_permissions: {
                 required: ['none'],
               },
             },
           },
         }
-      : {}),
+      : {
+          minimum_chrome_version: '120',
+        }),
   }),
 });

@@ -16,7 +16,7 @@ describe('domain model', () => {
   it('exports the documented settings defaults', () => {
     expect(DEFAULT_SETTINGS).toEqual({
       schemaVersion: 1,
-      rotationIntervalMs: 10_000,
+      rotationIntervalMs: 30_000,
       rotationDirection: 'forward',
       refreshIntervalMs: 300_000,
       includePinned: false,

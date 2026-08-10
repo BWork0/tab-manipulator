@@ -101,7 +101,7 @@ describe('options settings editor', () => {
 
     editor.write(DEFAULT_SETTINGS);
 
-    expect(elements.rotationInterval.value).toBe('10000');
+    expect(elements.rotationInterval.value).toBe('30000');
     expect(elements.rotationDirection.value).toBe('forward');
     expect(elements.refreshInterval.value).toBe('300000');
     expect(elements.includePinned.checked).toBe(false);

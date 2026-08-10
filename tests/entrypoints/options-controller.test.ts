@@ -98,7 +98,7 @@ describe('options page controller', () => {
   it('tracks unsaved changes, warns before unload, and discards back to saved settings', async () => {
     const harness = createHarness();
     await harness.controller.start();
-    const changedSettings = { ...DEFAULT_SETTINGS, rotationIntervalMs: 30_000 };
+    const changedSettings = { ...DEFAULT_SETTINGS, rotationIntervalMs: 60_000 };
 
     harness.setDraft(changedSettings);
 
