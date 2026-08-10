@@ -167,3 +167,67 @@ The manifest and archive audit compared each ZIP member list with its generated 
 - Chromium ZIP SHA-256: `a7a61f5cec4fdf839bd7975e5ecf171a01c14fcb54f15948279d569db5df83eb`.
 - Firefox ZIP SHA-256: `f6cc2d79f1ad3f93d6a6c4a100ad27a538eddad6f8424749639f8cfb1729f748`.
 - A metadata-only rerun of the T064 browser audit was attempted separately in Edge and Chrome. The local CDP runner timed out at `Runtime.enable` in Edge and `Extensions.loadUnpacked` in Chrome; prior T064 runtime/privacy evidence remains valid, and T065's direct generated/package manifest checks passed without a permission or runtime-code change.
+
+## T066 — Final release gate
+
+**Date:** 2026-08-10  
+**Status:** Passed. No open P0 defect remains.
+
+### Clean-checkout validation and reproducible archives
+
+- A clean source snapshot of commit `2e8a2a9da59cefdc9cc092cbd5d3989a2aa602dc` was created with `git archive`. The existing dependency tree was exposed through a temporary junction, and the repository's normal `pnpm.cmd postinstall` step generated WXT types before validation.
+- `pnpm.cmd validate` passed formatting, formatting safeguards, strict TypeScript compilation, all **286** unit/integration tests, and Chromium/Firefox MV3 production builds in that snapshot.
+- `pnpm.cmd zip` and `pnpm.cmd zip:firefox` produced the Chromium, Firefox, and Firefox review-source archives. Repeating both ZIP commands in the same clean snapshot produced byte-identical SHA-256 hashes:
+
+| Artifact                            | SHA-256                                                            | Repeated result |
+| ----------------------------------- | ------------------------------------------------------------------ | --------------- |
+| `tab-manipulator-1.0.0-chrome.zip`  | `a7a61f5cec4fdf839bd7975e5ecf171a01c14fcb54f15948279d569db5df83eb` | Identical       |
+| `tab-manipulator-1.0.0-firefox.zip` | `f6cc2d79f1ad3f93d6a6c4a100ad27a538eddad6f8424749639f8cfb1729f748` | Identical       |
+| `tab-manipulator-1.0.0-sources.zip` | `7a17246811a4614d2ed792e8f621ff66a82137f511168e072bd01a5f5af252f6` | Identical       |
+
+### P0 and release-criterion traceability
+
+| Scope or criterion                            | Passing evidence                                                                                          |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| FR-001–003: discovery, selection, eligibility | T011, T013, T022, and T041 tests; T060 integration suite; T063 browser matrix                             |
+| FR-010–013: rotation                          | T014, T024, T030, and T042 tests; T060 integration suite; T063 browser matrix; T066 60-minute run         |
+| FR-020–022: refresh                           | T015, T024, T031, and T043 tests; T060 integration suite; T063 browser matrix                             |
+| FR-030–031: pinned tabs and filters           | T012, T013, T020, T051, and T052 tests; T060 integration suite; T063 browser matrix                       |
+| FR-040–043: persistence and scheduling        | T020, T021, T024, T025, T030, T031, and T033 tests; focused delayed-alarm tests; T063 restart/wake matrix |
+| FR-050–051: messaging and status              | T023, T032, T033, T040, and T044 tests; T060 integration suite; T063 browser matrix                       |
+| Current stable required browsers              | T063 passed Chrome 151, Edge 151, and Firefox 153 with no open P0 defect                                  |
+| 100-tab popup under 500 ms                    | T061 measured 9.09 ms and confirmed deferred favicon failures do not block interaction                    |
+| Idle polling, writes, and network             | T061 observed no idle scheduling/storage polling; T064 observed no extension-originated network traffic   |
+| Conservative restart recovery                 | T060 automated recovery coverage and T063 real-browser restart/wake cases passed                          |
+| Permissions, privacy, and manifests           | T064 generated/package audit passed with only `tabs`, `storage`, and `alarms`                             |
+| Accessibility                                 | T062 keyboard, accessible-name, live-region, focus, contrast, dark-mode, and 200% zoom review passed      |
+| Production identity and store metadata        | T065 package assertions and release metadata passed                                                       |
+
+All Phase 0–6 task dependencies before T066 are checked with automated or recorded manual evidence. Approved P1 tasks T070–T077 remain post-MVP and do not alter the P0 release gate.
+
+### 60-minute active-browser rotation reliability
+
+- The production Chromium MV3 build ran in headed Microsoft Edge 151.0.4129.72 with a fresh temporary profile and four local HTTP tabs. Rotation used the forward direction and a 30-second browser-alarm interval.
+- The uninterrupted 60-minute observation recorded **120 of 120 expected activations (100%)**, above the PRD's 99% threshold. Five-minute checkpoints progressed from 10 ticks at 5 minutes to 110 ticks at 55 minutes; the boundary tick completed during the permitted 10-second grace period.
+- The first tick occurred after **30,028 ms**. All four targets were visited, no immediate target repeat or extra activation occurred, and the session stopped to `Idle`.
+- The aggregate production-build SHA-256 recorded by the runner was `d0e84d2f1817997173201a3adbf0a5e52b5f6244fbc95c12e869a36c42cff8d3`.
+
+### Delayed alarms and no catch-up replay
+
+- A focused **38-test** run passed scheduler, recovery, rotation-service, refresh-service, and production-composed integration coverage.
+- The passing cases prove that a delayed callback schedules from actual completion time, recovery executes one overdue action, a delayed refresh performs one pass, and duplicate delivery of a consumed due timestamp causes no second action.
+- T063 independently observed at most one overdue recovery action in every required real browser.
+
+### Commands
+
+```text
+pnpm.cmd postinstall
+pnpm.cmd validate
+pnpm.cmd zip
+pnpm.cmd zip:firefox
+pnpm.cmd zip
+pnpm.cmd zip:firefox
+node scripts/t063-browser-matrix.mjs edge reliability-preflight 2
+node scripts/t063-browser-matrix.mjs edge reliability 60
+.\node_modules\.bin\vitest.cmd run tests/core/scheduler.test.ts tests/core/recovery.test.ts tests/services/rotation-service.test.ts tests/services/refresh-service.test.ts tests/integration/background-flows.test.ts --reporter=verbose
+```

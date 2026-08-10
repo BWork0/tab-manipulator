@@ -600,16 +600,24 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T066 — Final release gate
 
-- [ ] Run compile, unit/integration tests, Chromium build/zip, and Firefox MV3 build/zip from a clean checkout.
-- [ ] Confirm all P0 requirements and this task list are traceable to passing tests or recorded manual evidence.
-- [ ] Complete a 60-minute rotation reliability test at a 30-second-or-longer interval.
-- [ ] Confirm delayed alarms execute at most one catch-up pass.
-- [ ] Record known limitations, especially best-effort 10-second rotation behavior.
+- [x] Run compile, unit/integration tests, Chromium build/zip, and Firefox MV3 build/zip from a clean checkout.
+- [x] Confirm all P0 requirements and this task list are traceable to passing tests or recorded manual evidence.
+- [x] Complete a 60-minute rotation reliability test at a 30-second-or-longer interval.
+- [x] Confirm delayed alarms execute at most one catch-up pass.
+- [x] Record known limitations, especially best-effort 10-second rotation behavior.
 
 **Requirements:** Sections 5.2, 15, and 16  
 **Depends on:** T064, T065  
 **Likely files:** Release checklist/release notes  
 **Acceptance:** Every PRD release criterion passes, production archives are reproducible, and no P0 defect remains open.
+
+**Verification evidence (2026-08-10):**
+
+- A clean snapshot of commit `2e8a2a9da59cefdc9cc092cbd5d3989a2aa602dc` passed formatting safeguards, TypeScript compilation, all 286 tests, Chromium and Firefox MV3 builds, and both production ZIP commands. Repeated ZIP runs produced byte-identical Chromium, Firefox, and Firefox source archives.
+- A headed Edge 151.0.4129.72 run rotated four local tabs every 30 seconds for 60 uninterrupted minutes and recorded 120/120 expected ticks (100%), no immediate repeat or extra activation, all targets visited, and an idle final state.
+- Thirty-eight focused scheduler, recovery, service, and integration tests passed delayed-alarm, one-overdue-action, duplicate-delivery, and no-catch-up behavior. T063 provides matching real-browser restart/wake evidence.
+- `docs/QA.md` maps every P0 requirement and release criterion to passing automated or manual evidence. `docs/RELEASE.md` records the 10-second best-effort timing limit and other supported-browser, restricted-page, and conservative-recovery limitations.
+- No P0 defect remains open. Detailed commands, archive hashes, traceability, and long-run measurements are recorded in `docs/QA.md`.
 
 ## Requirement-to-task traceability
 

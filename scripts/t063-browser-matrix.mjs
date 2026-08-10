@@ -77,6 +77,7 @@ class CdpClient {
       const pending = this.pending.get(message.id);
       if (!pending) return;
       this.pending.delete(message.id);
+      clearTimeout(pending.timeout);
       if (message.error) pending.reject(new Error(message.error.message));
       else pending.resolve(message.result);
     });
@@ -85,12 +86,21 @@ class CdpClient {
   send(method, params = {}, sessionId) {
     const id = this.nextId++;
     return new Promise((resolveRequest, rejectRequest) => {
-      this.pending.set(id, { resolve: resolveRequest, reject: rejectRequest });
+      const timeout = setTimeout(() => {
+        this.pending.delete(id);
+        rejectRequest(new Error(`${method} timed out.`));
+      }, 15_000);
+      this.pending.set(id, { resolve: resolveRequest, reject: rejectRequest, timeout });
       this.socket.send(JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) }));
     });
   }
 
   close() {
+    for (const pending of this.pending.values()) {
+      clearTimeout(pending.timeout);
+      pending.reject(new Error('CDP connection closed.'));
+    }
+    this.pending.clear();
     this.socket.close();
   }
 }
@@ -110,11 +120,11 @@ async function connectToChromium(profile) {
   return new CdpClient(socket);
 }
 
-function startChromium(binary, profile) {
+function startChromium(binary, profile, headless = true) {
   const child = spawn(
     binary,
     [
-      '--headless=new',
+      ...(headless ? ['--headless=new'] : []),
       '--remote-debugging-port=0',
       `--user-data-dir=${profile}`,
       '--enable-unsafe-extension-debugging',
@@ -188,6 +198,27 @@ async function popupReady(client, extensionId) {
     throw new Error(`${error.message}: ${JSON.stringify(state)}`);
   }
   return { popupTarget, sessionId };
+}
+
+async function popupReadyWithRetry(client, extensionId, attempts = 5) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await popupReady(client, extensionId);
+    } catch (error) {
+      lastError = error;
+      console.log(
+        JSON.stringify({
+          type: 'setup-retry',
+          operation: 'open-popup',
+          attempt,
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+      await delay(1_000);
+    }
+  }
+  throw lastError;
 }
 
 async function click(client, sessionId, selector) {
@@ -669,11 +700,184 @@ async function runChromiumMatrix(name, binary) {
   }
 }
 
+async function runRotationReliability(name, binary, durationMinutes) {
+  const profile = await mkdtemp(join(tmpdir(), `tab-manipulator-t066-${name}-`));
+  const local = await startLocalPages();
+  const intervalMs = 30_000;
+  const durationMs = durationMinutes * 60_000;
+  let child;
+  let client;
+
+  try {
+    const reportSetup = (stage) => console.log(JSON.stringify({ type: 'setup', stage }));
+    reportSetup('launch-browser');
+    child = startChromium(binary, profile, false);
+    client = await connectToChromium(profile);
+    reportSetup('load-extension');
+    const loadedExtensionId = await loadExtension(client);
+    const extensionId = loadedExtensionId || (await getExtensionId(client));
+    reportSetup('open-popup');
+    const popup = await popupReadyWithRetry(client, extensionId);
+    reportSetup('create-tabs');
+    await evaluate(
+      client,
+      popup.sessionId,
+      `Promise.all(${JSON.stringify(['/reliability-a', '/reliability-b', '/reliability-c', '/reliability-d'])}.map((page) => chrome.tabs.create({ url: ${JSON.stringify(local.origin)} + page, active: false })))`,
+    );
+    await waitFor(
+      () =>
+        evaluate(
+          client,
+          popup.sessionId,
+          `chrome.tabs.query({ currentWindow: true }).then((tabs) => tabs.filter((tab) => tab.url?.startsWith(${JSON.stringify(local.origin)}) && tab.status === 'complete').length === 4)`,
+        ),
+      'Reliability test tabs did not finish loading',
+    );
+    reportSetup('refresh-tab-list');
+    await click(client, popup.sessionId, '#refresh-tabs-button');
+    await waitFor(
+      () =>
+        evaluate(
+          client,
+          popup.sessionId,
+          `document.querySelectorAll('#tab-list input[type="checkbox"]:not(:disabled)').length === 4`,
+        ),
+      'Reliability test tabs did not appear in the popup',
+    );
+    reportSetup('select-tabs');
+    await click(client, popup.sessionId, '#select-all-tabs-button');
+    await waitFor(
+      async () =>
+        (await textOf(client, popup.sessionId, '#selection-summary')) ===
+        '4 of 4 eligible tabs selected',
+      'Reliability test tabs were not selected',
+    );
+    reportSetup('register-observer');
+    await evaluate(
+      client,
+      popup.sessionId,
+      `chrome.tabs.query({ currentWindow: true }).then((tabs) => {
+        const targetIds = tabs
+          .filter((tab) => tab.url?.startsWith(${JSON.stringify(local.origin)}))
+          .map((tab) => tab.id);
+        globalThis.__t066Reliability = { targetIds, activations: [] };
+        chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
+          if (globalThis.__t066Reliability.targetIds.includes(tabId)) {
+            globalThis.__t066Reliability.activations.push({ tabId, windowId, at: Date.now() });
+          }
+        });
+      })`,
+    );
+    reportSetup('start-rotation');
+    await setSelect(client, popup.sessionId, '#rotation-direction', 'forward');
+    await setSelect(client, popup.sessionId, '#rotation-interval', String(intervalMs));
+    const startedAt = Date.now();
+    await click(client, popup.sessionId, '#rotation-primary-button');
+    await waitForText(client, popup.sessionId, '#status-label', 'Rotating');
+    reportSetup('observation-started');
+
+    const observationEndsAt = startedAt + durationMs;
+    let nextProgressAt = startedAt + 5 * 60_000;
+    while (Date.now() < observationEndsAt) {
+      await delay(Math.min(5_000, observationEndsAt - Date.now()));
+      if (Date.now() >= nextProgressAt) {
+        const observed = await evaluate(
+          client,
+          popup.sessionId,
+          `globalThis.__t066Reliability.activations.length`,
+        );
+        console.log(
+          JSON.stringify({
+            type: 'progress',
+            elapsedMinutes: Number(((Date.now() - startedAt) / 60_000).toFixed(1)),
+            observedTicks: observed,
+          }),
+        );
+        nextProgressAt += 5 * 60_000;
+      }
+    }
+
+    // Give the boundary tick a short grace period without reaching the next interval.
+    await delay(10_000);
+    const activations = await evaluate(
+      client,
+      popup.sessionId,
+      `globalThis.__t066Reliability.activations`,
+    );
+    const expectedTicks = Math.floor(durationMs / intervalMs);
+    const observedTicks = activations.length;
+    const reliabilityPercent = (observedTicks / expectedTicks) * 100;
+    const immediateRepeats = activations.filter(
+      (activation, index) => index > 0 && activation.tabId === activations[index - 1].tabId,
+    ).length;
+    const uniqueTargetIds = new Set(activations.map((activation) => activation.tabId)).size;
+
+    assert(
+      reliabilityPercent >= 99,
+      `Rotation reliability was ${reliabilityPercent.toFixed(2)}% (${observedTicks}/${expectedTicks}).`,
+    );
+    assert(
+      observedTicks <= expectedTicks,
+      `Rotation produced an action storm (${observedTicks}/${expectedTicks} expected ticks).`,
+    );
+    assert(immediateRepeats === 0, 'Forward rotation immediately repeated a target.');
+    assert(uniqueTargetIds === 4, 'Rotation did not reach every selected target.');
+    await click(client, popup.sessionId, '#rotation-stop-button');
+    await waitForText(client, popup.sessionId, '#status-label', 'Idle');
+
+    return {
+      browser: name,
+      binary: basename(binary),
+      build: 'chrome-mv3',
+      buildHash: await hashDirectory(CHROMIUM_BUILD),
+      extensionId,
+      profile: 'fresh-temporary',
+      intervalMs,
+      durationMinutes,
+      expectedTicks,
+      observedTicks,
+      reliabilityPercent: Number(reliabilityPercent.toFixed(2)),
+      immediateRepeats,
+      uniqueTargetIds,
+      firstTickDelayMs: activations[0]?.at - startedAt,
+      finalTickAt: activations.at(-1)?.at,
+      statusAfterStop: await textOf(client, popup.sessionId, '#status-label'),
+    };
+  } finally {
+    try {
+      await client?.send('Browser.close');
+    } catch {
+      child?.kill();
+    }
+    await delay(500);
+    child?.kill();
+    local.server.close();
+    await rm(profile, { recursive: true, force: true });
+  }
+}
+
 const requested = process.argv[2];
 assert(
   requested in BROWSERS,
-  `Usage: node scripts/t063-browser-matrix.mjs <${Object.keys(BROWSERS).join('|')}>`,
+  `Usage: node scripts/t063-browser-matrix.mjs <${Object.keys(BROWSERS).join('|')}> [matrix|reliability|reliability-preflight] [minutes]`,
 );
 
-const result = await runChromiumMatrix(requested, BROWSERS[requested]);
+const mode = process.argv[3] ?? 'matrix';
+assert(
+  mode === 'matrix' || mode === 'reliability' || mode === 'reliability-preflight',
+  'Mode must be matrix, reliability, or reliability-preflight.',
+);
+const requestedMinutes = Number(process.argv[4] ?? (mode === 'reliability-preflight' ? 2 : 60));
+assert(
+  mode !== 'reliability' || (Number.isInteger(requestedMinutes) && requestedMinutes >= 60),
+  'The release-gate reliability run must be at least 60 whole minutes.',
+);
+assert(
+  mode !== 'reliability-preflight' || (Number.isInteger(requestedMinutes) && requestedMinutes >= 2),
+  'The reliability preflight must be at least two whole minutes.',
+);
+const result =
+  mode === 'reliability' || mode === 'reliability-preflight'
+    ? await runRotationReliability(requested, BROWSERS[requested], requestedMinutes)
+    : await runChromiumMatrix(requested, BROWSERS[requested]);
 console.log(JSON.stringify(result, null, 2));
