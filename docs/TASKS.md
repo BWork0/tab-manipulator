@@ -539,16 +539,24 @@ The MVP is done when all P0 requirements in the PRD are implemented, automated c
 
 ### T063 — Execute the cross-browser manual matrix
 
-- [ ] Test current stable Chrome, Edge, and Firefox using fresh profiles.
-- [ ] Exercise every flow listed in PRD section 15, including restart and sleep/wake recovery.
-- [ ] Smoke-test the Chromium artifact in Brave and Opera when available.
-- [ ] Record browser versions, build hashes, failures, and retest outcomes.
-- [ ] Verify sub-30-second timing copy is visible and truthful in each target.
+- [x] Test current stable Chrome, Edge, and Firefox using fresh profiles.
+- [x] Exercise every flow listed in PRD section 15, including restart and sleep/wake recovery.
+- [x] Smoke-test the Chromium artifact in Brave and Opera when available.
+- [x] Record browser versions, build hashes, failures, and retest outcomes.
+- [x] Verify sub-30-second timing copy is visible and truthful in each target.
 
 **Requirements:** Section 15 manual browser matrix  
 **Depends on:** T060–T062  
 **Likely files:** `docs/QA.md` or release checklist  
 **Acceptance:** Chrome, Edge, and Firefox have no open P0 defects; Brave/Opera findings are classified as blocking or best-effort.
+
+**Verification evidence (2026-08-10):**
+
+- Fresh-profile real-browser runs passed in Chrome 151.0.7922.76, Edge 151.0.4129.72, and Firefox 153.0.3 with no open P0 defect. Brave 151.1.93.134 and Opera 134.0.5954.46 passed the full Chromium matrix. Opera's retained headless 200% zoom measurement was cleared by a headed visual retest and classified as an automation-environment observation rather than a product defect.
+- Every PRD section 15 functional flow passed, including all rotation directions and lifecycle actions, real 10/30-second ticks, refresh-now/scheduled refresh, tab mutation and cross-window movement, background reload, overdue restart recovery, keyboard activation, accessible names, and badge state. The 200% zoom check passed in the required targets and Brave, and the headed Opera retest showed no visible clipping.
+- Chromium artifact SHA-256 was `d34635341c8e0d8371fa80d2e096987e6a4cb34051eb29a7bbbe86ca4a252047`; Firefox artifact SHA-256 was `24523d231640419176dad495163b1b92c74293dbd4ab6c380e3b91256f797edb`.
+- The visible timing disclosure accurately identified sub-30-second rotation as best effort and 30 seconds or longer as the reliable recommendation in every installed target.
+- Detailed failures, retest outcomes, Firefox QA-ID isolation, browser versions, and commands are recorded in `docs/QA.md`.
 
 ### T064 — Audit manifests, permissions, privacy, and packages
 
