@@ -40,22 +40,37 @@
 
         <article class="document">
           <div class="notice">
-            <strong>In short:</strong> Tab Manipulator does not collect, transmit, sell, or share
-            personal information, browsing history, or usage data.
+            <strong>In short:</strong> Tab Manipulator handles open-tab details and schedule
+            settings only to run the rotation and refresh actions you choose. That data stays in the
+            extension's local browser storage and is not sent to BWork0 or any third party.
           </div>
 
           <h2>Data handled by the extension</h2>
           <p>
-            To provide tab rotation and scheduled refresh, Tab Manipulator may process tab URLs,
-            titles, pinned state, position, extension settings, and active schedule state. This
-            information is used only to perform the actions you request.
+            Tab Manipulator reads metadata for currently open tabs, including the URL, title, site
+            icon, pinned status, position, and whether a tab is active. It does not access Chrome's
+            browsing history database or read the contents of web pages.
+          </p>
+          <p>
+            The extension uses this metadata to list eligible tabs, identify the tabs you select,
+            rotate between them, refresh them, and safely match active targets after a browser
+            restart. It also handles the settings you enter and the state of active schedules.
           </p>
 
           <h2>Storage and transmission</h2>
           <ul>
             <li>
-              Settings and active schedule information are stored in extension-local browser
-              storage.
+              Your settings are stored in extension-local browser storage until you change them or
+              remove the extension.
+            </li>
+            <li>
+              While a schedule is active, the extension stores descriptors for the selected tabs,
+              such as their URLs and titles, together with local browser identifiers, timing, and
+              schedule status.
+            </li>
+            <li>
+              Stopping a schedule deletes its runtime target descriptors. Removing the extension
+              deletes the remaining extension-local data through your browser.
             </li>
             <li>
               No browsing metadata, settings, error details, or usage data is sent to BWork0 or any
@@ -71,6 +86,18 @@
             When the extension refreshes a tab, the browser may contact that page and its service
             providers in the same way it would during a manual refresh. The privacy practices of
             those websites are governed by their own policies.
+          </p>
+
+          <h2>Chrome Web Store Limited Use</h2>
+          <p>
+            Tab Manipulator uses tab metadata only to provide its user-facing rotation and refresh
+            features. It does not use or transfer this data for advertising, profiling, unrelated
+            purposes, creditworthiness, or lending. The data is not transmitted to BWork0, so no
+            person at BWork0 can access it.
+          </p>
+          <p>
+            The use of information received from Google APIs will adhere to the Chrome Web Store
+            User Data Policy, including the Limited Use requirements.
           </p>
 
           <h2>Browser permissions</h2>
@@ -89,15 +116,14 @@
 
           <h2>Your choices</h2>
           <p>
-            You can stop active schedules at any time. Stopping a schedule removes its runtime
-            target information. Removing the extension deletes its remaining extension-local data
-            through your browser.
+            You choose which tabs to automate and when to start or stop a schedule. Tab Manipulator
+            does not access or maintain Chrome's general browsing history.
           </p>
 
           <h2>Children's privacy</h2>
           <p>
-            Tab Manipulator does not knowingly collect information from children or from any other
-            user because it does not collect personal information.
+            Tab Manipulator is not directed to children and does not ask users for names, email
+            addresses, account details, or other identity information.
           </p>
 
           <h2>Changes to this policy</h2>
