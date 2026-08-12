@@ -3,32 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light only" />
     <meta
       name="description"
       content="Tab Manipulator rotates selected browser tabs and refreshes them on a schedule, with all data kept on your device."
     />
-    <meta name="theme-color" content="#167744" />
+    <meta name="theme-color" content="#fdfefd" />
     <link rel="icon" href="./icon.png" type="image/png" />
+    <link rel="preload" href="./hero-tabs.webp" as="image" type="image/webp" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="canonical" href="https://bwork0.github.io/tab-manipulator/" />
     <title>Tab Manipulator</title>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-header">
       <a class="brand" href="./">
-        <img src="./icon.png" alt="" />
+        <img src="./icon.png" alt="" width="32" height="32" />
         <span>Tab Manipulator</span>
       </a>
-      <nav aria-label="Primary navigation">
+      <nav class="site-nav" aria-label="Primary navigation">
         <a href="./" aria-current="page">Home</a>
         <a href="./privacy/">Privacy</a>
         <a href="./support/">Support</a>
       </nav>
     </header>
 
-    <main>
+    <main id="main-content" class="page-shell">
       <section class="hero">
-        <div>
+        <div class="hero-copy">
           <p class="eyebrow">Private browser automation</p>
           <h1>Keep the right tabs moving.</h1>
           <p class="lede">
@@ -36,45 +39,106 @@
             browsing metadata stay inside your browser.
           </p>
           <div class="actions">
-            <a class="button" href="https://github.com/BWork0/tab-manipulator"
-              >View source on GitHub</a
-            >
-            <a class="button secondary" href="./privacy/">Read the privacy policy</a>
+            <a class="button" href="https://github.com/BWork0/tab-manipulator">View source</a>
+            <a class="button secondary" href="./privacy/">Privacy policy</a>
           </div>
         </div>
 
-        <aside class="hero-card" aria-label="Browser support">
-          <img src="./icon.png" alt="Tab Manipulator icon" />
-          <h2>One extension, three browsers</h2>
-          <p>Built for Chrome, Microsoft Edge, and Firefox from one shared codebase.</p>
-        </aside>
+        <figure class="hero-visual">
+          <img
+            src="./hero-tabs.webp"
+            alt="Abstract arrangement of overlapping white and green tabs"
+            width="1536"
+            height="1024"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </figure>
       </section>
 
-      <section class="feature-grid" aria-label="Features">
-        <article class="card">
-          <h2>Automatic rotation</h2>
-          <p>Choose the tabs you need and move through them on a clear, configurable interval.</p>
-        </article>
-        <article class="card">
-          <h2>Scheduled refresh</h2>
+      <section class="compatibility" aria-label="Supported browsers">
+        <p class="compatibility-label">Built for</p>
+        <p>
+          <span class="browser-name">Chrome</span><br />
+          <span class="browser-version">Version 120+</span>
+        </p>
+        <p>
+          <span class="browser-name">Microsoft Edge</span><br />
+          <span class="browser-version">Version 120+</span>
+        </p>
+        <p>
+          <span class="browser-name">Firefox</span><br />
+          <span class="browser-version">Version 140+</span>
+        </p>
+      </section>
+
+      <section class="capabilities">
+        <div class="section-heading">
+          <h2>Two routines. One quiet extension.</h2>
+          <p>Set up the tabs you need, let them run, and stop everything whenever you choose.</p>
+        </div>
+
+        <div class="feature-layout">
+          <article class="feature-primary">
+            <img class="feature-mark" src="./icon.png" alt="" width="88" height="88" />
+            <div class="feature-copy">
+              <h3>Automatic rotation</h3>
+              <p>
+                Choose the tabs you need and move through them on a clear, configurable interval.
+              </p>
+            </div>
+          </article>
+
+          <div class="feature-stack">
+            <article class="feature-secondary">
+              <h3>Scheduled refresh</h3>
+              <p>
+                Keep dashboards and other changing pages current without repeatedly reloading them
+                yourself.
+              </p>
+            </article>
+            <article class="feature-secondary">
+              <h3>Local by design</h3>
+              <p>
+                No analytics, remote logging, account, or cloud service. Extension data remains on
+                your device.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="privacy-statement">
+        <div>
+          <h2>Your tabs are not our data.</h2>
           <p>
-            Keep dashboards and other changing pages current without repeatedly reloading them
-            yourself.
+            Tab Manipulator does its work locally and asks only for the permissions required to
+            manage your schedules.
           </p>
-        </article>
-        <article class="card">
-          <h2>Local by design</h2>
-          <p>
-            No analytics, remote logging, account, or cloud service. Extension data remains on your
-            device.
-          </p>
-        </article>
+        </div>
+
+        <dl class="privacy-facts">
+          <div>
+            <dt>Data path</dt>
+            <dd>
+              Settings and active schedule information stay in extension-local browser storage.
+            </dd>
+          </div>
+          <div>
+            <dt>Telemetry</dt>
+            <dd>No analytics, advertising, remote logging, or usage tracking.</dd>
+          </div>
+          <div>
+            <dt>Permissions</dt>
+            <dd>Only tabs, storage, and alarms. No broad website access.</dd>
+          </div>
+        </dl>
       </section>
     </main>
 
     <footer class="site-footer">
       <p>Tab Manipulator is published by BWork0.</p>
-      <p><a href="./privacy/">Privacy</a> · <a href="./support/">Support</a></p>
+      <p class="footer-links"><a href="./privacy/">Privacy</a><a href="./support/">Support</a></p>
     </footer>
   </body>
 </html>
